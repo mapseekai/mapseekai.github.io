@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
@@ -21,8 +22,8 @@ test('three missing screenshots render honest bounded placeholders without broke
   const html = await read('dist/index.html');
   assert.equal((html.match(/data-media-state="reserved"/g) || []).length, 3);
   assert.equal((html.match(/预留给真实产品截图/g) || []).length, 3);
-  assert.equal((html.replace(/<!--[\s\S]*?-->/g, "").match(/1600 × 1000/g) || []).length, 3);
-  assert.ok(!/<img\b/.test(html));
+  assert.ok(!/src="\/screenshots\//.test(html));
+  assert.ok(!html.includes('placeholder-word') && !html.includes('placeholder-size'));
   const config = await read('src/content/product-media.ts');
   assert.equal((config.match(/src: null/g) || []).length, 3);
 });
@@ -67,4 +68,32 @@ test('SVG export still resolves tokens and releases its object URL', async () =>
   assert.match(source, /XMLSerializer/);
   assert.match(source, /revokeObjectURL/);
   assert.match(source, /image\/svg\+xml/);
+});
+
+
+test('brand mark, wordmark, and favicon preserve the exact approved Mapseek source files', async () => {
+  const hashes = {
+    'public/assets/brand/mapseek-symbol.svg': '9c070b1eb5dc1a77625e7ec29948ff2b9308a2606bffb85d1d58d3beb66db904',
+    'public/assets/brand/mapseek-wordmark.svg': '45a60ed2fa41cc30c23fa780e736ae2f9c71eda626b8e158fe564d3388684476',
+    'public/favicon.svg': '9c070b1eb5dc1a77625e7ec29948ff2b9308a2606bffb85d1d58d3beb66db904',
+  };
+  for (const [file, expected] of Object.entries(hashes)) {
+    assert.equal(createHash('sha256').update(await read(file)).digest('hex'), expected, file);
+  }
+  const html = await read('dist/index.html');
+  assert.match(html, /src="\/assets\/brand\/mapseek-wordmark.svg"/);
+  assert.match(html, /src="\/assets\/brand\/mapseek-symbol.svg"/);
+});
+
+test('the product presentation has no sequence labels or numbered navigation', async () => {
+  for (const file of ['src/pages/Home.tsx','src/pages/Product.tsx','src/components/CraftShell.tsx']) {
+    const source = await read(file);
+    assert.ok(!source.includes('nav-number') && !source.includes('index-number'), file);
+    assert.ok(!/0\{(?:index|i|products\.indexOf)/.test(source), file);
+  }
+  const html = await read('dist/index.html');
+  const text = html.replace(/<!--[\s\S]*?-->/g, '').replace(/<[^>]+>/g, ' ');
+  assert.ok(!/\b0[0-9]\b/.test(text), 'No displayed decorative zero-padded numbers');
+  for (const name of ['总览', 'Cloud', 'Loom', 'Design']) assert.ok(html.includes(`前往 ${name}`));
+  assert.ok(!html.includes('rail-percent') && !html.includes('rail-origin'));
 });

@@ -79,3 +79,7 @@ VITE_DESIGN_URL=https://your-design.example
 推送到 `main` 后，现有 [GitHub Actions 工作流](.github/workflows/pages.yml) 会安装锁定依赖、构建、执行静态测试，并将 `dist/` 发布到 GitHub Pages。
 
 源码仓库：`mapseekai/mapseekai.github.io`。部署说明见 [docs/deployment.md](docs/deployment.md)。本地截图、下载、日志与环境配置保留在忽略目录中，不进入公开仓库。
+
+## PhotoCraft 细化版本
+
+本版使用 Mapseek 项目原始图标与完整字标，导航、章节和功能区不再显示序号。首屏、通栏截图及能力网格的设计依据见 [参考分析](docs/photocraft-reference-review.md)。截图位继续保留给真实产品素材。

@@ -1,13 +1,10 @@
+/** Canonical Mapseek artwork, copied byte-for-byte from the Mapseek project. */
 export function BrandMark({ className = '' }: { className?: string }) {
-  return (
-    <svg className={className} width="30" height="30" viewBox="0 0 40 40" fill="none" aria-hidden="true">
-      <path d="M5 30V10L20 19L35 10V30M5 10L20 30L35 10M20 19V30" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" />
-    </svg>
-  );
+  return <img className={`brand-symbol ${className}`} src="/assets/brand/mapseek-symbol.svg" alt="" width={288} height={288} aria-hidden="true" />;
 }
 
 export function Brand() {
-  return <a className="brand" href="/" aria-label="MapseekAI 首页"><BrandMark /><span>mapseek<span className="brand-ai">ai</span></span></a>;
+  return <a className="brand brand-official" href="/" aria-label="MapseekAI 首页"><img className="brand-wordmark" src="/assets/brand/mapseek-wordmark.svg" alt="Mapseek" width={1759} height={290} /></a>;
 }
 
 export function Github({ size = 20 }: { size?: number }) {

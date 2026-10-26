@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowDown, ArrowUpRight, Menu, Moon, Sun, X } from 'lucide-react';
-import { Brand, BrandMark } from './Brand';
+import { Brand } from './Brand';
 
 const navigation = [['cloud', 'Cloud'], ['loom', 'Loom'], ['design', 'Design']] as const;
 
@@ -29,9 +29,9 @@ export function CraftHeader({ path }: { path: string }) {
     try { localStorage.setItem('mapseek-theme', next ? 'dark' : 'light'); } catch { /* Current-tab switching still works when storage is disabled. */ }
   }
   return <header className="craft-header" ref={header}>
-    <a className="craft-brand" href="/" aria-label="MapseekAI 首页"><span className="craft-logo" aria-hidden="true"><BrandMark /></span><span>mapseek<span className="brand-suffix">ai</span></span></a>
+    <div className="craft-brand"><Brand /></div>
     <nav id="craft-navigation" aria-label="产品导航" className={open ? 'is-open' : ''}>
-      {navigation.map(([id, name], index) => <a key={id} href={`/#${id}`} aria-current={path === `/products/${id}` ? 'page' : undefined} onClick={() => setOpen(false)}><span className="nav-number">0{index + 1}</span>{name}<ArrowUpRight size={14} aria-hidden="true" /></a>)}
+      {navigation.map(([id, name]) => <a key={id} href={`/#${id}`} aria-current={path === `/products/${id}` ? 'page' : undefined} onClick={() => setOpen(false)}>{name}<ArrowUpRight size={14} aria-hidden="true" /></a>)}
     </nav>
     <div className="craft-header-actions">
       <button className="craft-theme-toggle" type="button" onClick={toggleTheme} aria-label={dark ? '切换为浅色模式' : '切换为深色模式'} aria-pressed={dark}>{dark ? <Sun size={18} /> : <Moon size={18} />}</button>
@@ -60,10 +60,9 @@ export function CraftRail({ home }: { home: boolean }) {
     update();
     return () => { window.removeEventListener('scroll', request); window.removeEventListener('resize', request); cancelAnimationFrame(frame); };
   }, []);
-  return <aside className="craft-reading-rail" aria-label="页面阅读进度">
-    <span className="rail-origin">00</span><div className="rail-ruler" aria-hidden="true"><span style={{ transform: `scaleY(${progress / 100})` }} /></div>
-    {home && <nav aria-label="章节导航">{[['overview', '总览'], ...navigation].map(([id, label], index) => <a key={id} href={`#${id}`} aria-label={`前往 ${label}`} aria-current={active === id ? 'location' : undefined}><span>0{index}</span><span className="rail-tooltip">{label}</span></a>)}</nav>}
-    <div className="rail-percent" role="progressbar" aria-label="页面阅读进度" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>{String(progress).padStart(2, '0')}<small>%</small></div>
+  return <aside className="craft-reading-rail" aria-label="章节与阅读进度">
+    <div className="rail-progress" role="progressbar" aria-label="页面阅读进度" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><span style={{ transform: `scaleY(${progress / 100})` }} /></div>
+    {home && <nav aria-label="章节导航">{[['overview', '总览'], ...navigation].map(([id, label]) => <a key={id} href={`#${id}`} aria-label={`前往 ${label}`} aria-current={active === id ? 'location' : undefined}><span>{label}</span></a>)}</nav>}
   </aside>;
 }
 
