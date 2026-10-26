@@ -1,0 +1,492 @@
+/* Original atlas choreography. SVG cartography is an illustrative brand asset, not product evidence. */
+.spatial-hero {
+  --atlas-progress: 0;
+  --spatial-stage-height: clamp(580px, calc(100svh - 180px), 780px);
+  --spatial-travel: 220px;
+  --atlas-green: #527763;
+  --atlas-land: #e2e6d8;
+  --atlas-water: #bdcfc4;
+  --atlas-building: #cfdbca;
+  --atlas-road: #f4f3ed;
+  --atlas-line: #6b8874;
+  --atlas-dark: #19392f;
+  --atlas-night-water: #305b50;
+  position: relative;
+}
+.spatial-runway {
+  position: relative;
+  height: calc(var(--spatial-stage-height) + var(--spatial-travel));
+}
+.spatial-stage {
+  height: var(--spatial-stage-height);
+  position: sticky;
+  top: calc(var(--craft-header-h) + var(--craft-strip-h));
+  isolation: isolate;
+  overflow: clip;
+  container-type: size;
+  perspective: 1200px;
+  background: var(--craft-paper);
+}
+.atlas-art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.atlas-field {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  inset: 0;
+  fill: none;
+  stroke: var(--craft-accent);
+  stroke-width: 0.6;
+  opacity: 0.19;
+}
+.atlas-field ellipse {
+  opacity: 0.6;
+}
+.atlas-field .atlas-route {
+  stroke-width: 1.6;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0.8;
+}
+.atlas-sheet {
+  position: absolute;
+  aspect-ratio: 400/280;
+  transform-style: preserve-3d;
+  transform-origin: center;
+  border: 1px solid color-mix(in srgb, var(--atlas-line) 34%, transparent);
+  background: var(--atlas-land);
+  box-shadow:
+    0 12px 30px -16px rgba(30, 55, 36, 0.35),
+    0 1px 2px rgba(30, 55, 36, 0.06);
+  transition:
+    border-color 300ms,
+    box-shadow 300ms;
+  will-change: transform;
+}
+.atlas-sheet-label {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  display: block;
+  white-space: nowrap;
+  padding-top: 10px;
+  font: 500 8px/1 var(--craft-mono);
+  letter-spacing: 0.12em;
+  color: var(--craft-muted);
+  opacity: calc(1 - var(--atlas-progress));
+}
+.map-fragment {
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: var(--atlas-line);
+}
+.fragment-ground {
+  fill: var(--atlas-land);
+}
+.fragment-land {
+  fill: color-mix(in srgb, var(--atlas-land) 80%, var(--atlas-green));
+}
+.fragment-contour {
+  stroke: var(--atlas-line);
+  opacity: 0.65;
+}
+.fragment-river {
+  stroke: var(--atlas-water);
+}
+.fragment-building {
+  fill: var(--atlas-building);
+  stroke: var(--atlas-line);
+  stroke-opacity: 0.35;
+}
+.fragment-park {
+  fill: #9ab091;
+}
+.fragment-district {
+  fill: #b0c39e;
+}
+.fragment-road {
+  stroke: var(--atlas-road);
+}
+.fragment-survey {
+  stroke: var(--atlas-line);
+  opacity: 0.65;
+}
+.fragment-selection {
+  fill: color-mix(in srgb, var(--craft-accent) 10%, transparent);
+  stroke: var(--craft-accent);
+}
+.fragment-node-ring {
+  fill: var(--atlas-road);
+  stroke: var(--craft-accent);
+  stroke-width: 0.8;
+}
+.fragment-node {
+  fill: var(--craft-accent);
+}
+.fragment-geometry .fragment-ground {
+  fill: var(--craft-surface);
+}
+.fragment-geometry .fragment-land {
+  fill: color-mix(in srgb, var(--craft-paper) 94%, var(--craft-accent));
+}
+.fragment-geometry .fragment-building {
+  fill: none;
+  stroke-opacity: 0.4;
+}
+.fragment-geometry .fragment-contour {
+  opacity: 0.23;
+}
+.fragment-geometry .fragment-district {
+  fill: color-mix(in srgb, var(--craft-accent) 8%, var(--craft-paper));
+}
+.fragment-contours .fragment-building,
+.fragment-contours .fragment-district,
+.fragment-contours .fragment-road {
+  opacity: 0.12;
+}
+.fragment-cartography {
+  --atlas-land: #19392f;
+  --atlas-line: #779b7e;
+  --atlas-water: #3d6558;
+  --atlas-building: #295442;
+  --atlas-road: #aec1a0;
+}
+.fragment-cartography .fragment-park {
+  fill: #4c704e;
+}
+.fragment-cartography .fragment-district {
+  fill: #61835a;
+}
+.fragment-cartography .fragment-contour {
+  opacity: 0.42;
+}
+.fragment-map-label {
+  fill: #c7d8b8;
+  color: #c7d8b8;
+}
+.spatial-hero[data-active-product="cloud"] .atlas-sheet[data-product="cloud"],
+.spatial-hero[data-active-product="loom"] .atlas-sheet[data-product="loom"],
+.spatial-hero[data-active-product="design"]
+  .atlas-sheet[data-product="design"] {
+  border-color: var(--craft-accent);
+  box-shadow:
+    0 16px 36px -18px color-mix(in srgb, var(--craft-accent) 50%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--craft-accent) 12%, transparent);
+}
+.atlas-reading-field {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 34% 40% at 50% 46%,
+    var(--craft-paper) 18%,
+    color-mix(in srgb, var(--craft-paper) 96%, transparent) 55%,
+    color-mix(in srgb, var(--craft-paper) 0%, transparent) 100%
+  );
+  opacity: calc(1 - var(--atlas-progress));
+}
+.spatial-copy {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 24px 110px;
+  min-height: 100%;
+  z-index: 9;
+  pointer-events: none;
+}
+.spatial-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+  font-family: var(--craft-display);
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+}
+.spatial-brand .brand-symbol {
+  width: 48px;
+  height: 48px;
+}
+.spatial-brand-note {
+  font: 400 11px/1.4 var(--craft-body);
+  color: var(--craft-muted);
+  letter-spacing: 0;
+  padding-left: 12px;
+  border-left: 1px solid var(--craft-rule);
+}
+.craft-site .spatial-copy h1 {
+  font-size: clamp(40px, 4.4vw, 64px);
+  line-height: 1.19;
+  letter-spacing: -0.045em;
+  font-weight: 650;
+}
+.spatial-copy > p {
+  margin-top: 25px;
+  color: var(--craft-muted);
+  font-size: 16px;
+  line-height: 1.85;
+}
+.spatial-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 28px;
+  pointer-events: auto;
+}
+.spatial-actions .craft-button {
+  min-height: 46px;
+  font-size: 12px;
+  padding-inline: 20px;
+  gap: 24px;
+}
+.atlas-resolution {
+  position: absolute;
+  top: 73%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  z-index: 10;
+  pointer-events: none;
+  opacity: var(--atlas-progress);
+  transform: translateY(calc((1 - var(--atlas-progress)) * 18px));
+}
+.atlas-resolution > span {
+  font-size: 20px;
+  font-family: var(--craft-display);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+.atlas-resolution > p {
+  font-size: 12px;
+  color: var(--craft-muted);
+  margin-top: 9px;
+}
+.atlas-stage-footer {
+  position: absolute;
+  bottom: 14px;
+  left: 26px;
+  right: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 12;
+  gap: 14px;
+}
+.atlas-stage-footer > span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 10px;
+  color: var(--craft-muted);
+}
+.atlas-stage-footer i {
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.craft-site .atlas-motion-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  min-height: 32px;
+  padding: 6px 8px;
+  background: var(--craft-paper);
+  color: var(--craft-muted);
+  border: 1px solid var(--craft-rule);
+}
+.atlas-motion-toggle:hover:not(:disabled) {
+  color: var(--craft-accent);
+  border-color: var(--craft-accent);
+}
+.atlas-motion-toggle:disabled {
+  opacity: 1;
+  cursor: default;
+}
+.spatial-product-index {
+  position: relative;
+  z-index: 15;
+  background: var(--craft-paper);
+}
+.spatial-product-index > a {
+  position: relative;
+  overflow: clip;
+}
+.spatial-product-index > a::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  height: 2px;
+  background: var(--craft-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 350ms var(--craft-ease);
+}
+.spatial-product-index > a:is(:hover, :focus-visible)::before {
+  transform: scaleX(1);
+}
+:root[data-craft-theme="dark"] .spatial-hero {
+  --atlas-land: #304337;
+  --atlas-building: #3b5542;
+  --atlas-green: #54785b;
+  --atlas-water: #517c6c;
+  --atlas-line: #95ac85;
+  --atlas-road: #b4c5a2;
+}
+:root[data-craft-theme="dark"] .atlas-sheet {
+  box-shadow: 0 18px 36px -16px rgba(0, 0, 0, 0.65);
+}
+:root[data-craft-theme="dark"] .atlas-field {
+  opacity: 0.12;
+}
+@media (max-width: 900px) {
+  .spatial-hero {
+    --spatial-stage-height: 640px;
+    --spatial-travel: 170px;
+  }
+  .spatial-copy {
+    padding-bottom: 100px;
+  }
+  .atlas-reading-field {
+    background: radial-gradient(
+      ellipse 42% 40% at 50% 45%,
+      var(--craft-paper) 30%,
+      color-mix(in srgb, var(--craft-paper) 94%, transparent) 66%,
+      transparent 100%
+    );
+  }
+}
+@media (max-width: 650px) {
+  .spatial-hero {
+    --spatial-stage-height: clamp(560px, calc(100svh - 130px), 650px);
+    --spatial-travel: 130px;
+  }
+  .spatial-copy {
+    padding: 52px 15px 125px;
+  }
+  .spatial-brand {
+    gap: 8px;
+    font-size: 21px;
+    margin-bottom: 28px;
+  }
+  .spatial-brand .brand-symbol {
+    width: 38px;
+    height: 38px;
+  }
+  .spatial-brand-note {
+    font-size: 9px;
+    max-width: 7em;
+    padding-left: 8px;
+  }
+  .craft-site .spatial-copy h1 {
+    font-size: clamp(27px, 7.2vw, 42px);
+    line-height: 1.22;
+  }
+  .spatial-copy > p {
+    margin-top: 22px;
+    font-size: 13px;
+  }
+  .spatial-actions {
+    margin-top: 24px;
+    gap: 8px;
+  }
+  .spatial-actions .craft-button {
+    padding-inline: 12px;
+    font-size: 11px;
+    gap: 10px;
+    min-height: 44px;
+  }
+  .atlas-sheet {
+    opacity: 0.8;
+  }
+  .atlas-sheet-label {
+    font-size: 7px;
+    padding-top: 6px;
+  }
+  .atlas-reading-field {
+    background: radial-gradient(
+      ellipse 62% 38% at 50% 44%,
+      var(--craft-paper) 28%,
+      color-mix(in srgb, var(--craft-paper) 97%, transparent) 65%,
+      transparent 100%
+    );
+  }
+  .atlas-stage-footer {
+    left: 14px;
+    right: 14px;
+    bottom: 12px;
+    gap: 4px;
+  }
+  .atlas-stage-footer > span {
+    font-size: 9px;
+    gap: 5px;
+  }
+  .atlas-motion-toggle > span {
+    font-size: 9px;
+  }
+  .atlas-resolution > span {
+    font-size: 17px;
+  }
+  .atlas-resolution > p {
+    font-size: 11px;
+  }
+}
+@media (max-height: 700px) and (min-width: 901px) {
+  .spatial-hero {
+    --spatial-stage-height: 540px;
+  }
+  .spatial-copy {
+    padding-block: 38px 90px;
+  }
+  .spatial-brand {
+    margin-bottom: 20px;
+  }
+  .craft-site .spatial-copy h1 {
+    font-size: 50px;
+  }
+  .spatial-copy > p {
+    margin-top: 20px;
+    font-size: 15px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spatial-runway {
+    height: var(--spatial-stage-height);
+  }
+  .spatial-stage {
+    position: relative;
+    top: auto;
+  }
+  .atlas-sheet,
+  .spatial-product-index > a::before {
+    transition: none !important;
+  }
+  .atlas-resolution {
+    display: none;
+  }
+}
+
+.spatial-hero:not([data-motion]) .atlas-motion-toggle {
+  display: none;
+}
+.spatial-hero:not([data-motion]) .spatial-runway {
+  height: var(--spatial-stage-height);
+}
+.spatial-hero:not([data-motion]) .spatial-stage {
+  position: relative;
+  top: 0;
+}

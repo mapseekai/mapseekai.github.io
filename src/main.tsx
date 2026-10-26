@@ -8,6 +8,7 @@ import "./craft.css";
 import "lenis/dist/lenis.css";
 import "./craft-motion.css";
 import "./navigation.css";
+import "./spatial-hero.css";
 
 const root = document.getElementById("root");
 if (!root) throw new Error("Missing application root.");

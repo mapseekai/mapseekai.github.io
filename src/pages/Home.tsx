@@ -1,5 +1,5 @@
-import { ArrowDown, ArrowUpRight, ArrowRight } from 'lucide-react';
-import { BrandMark } from '../components/Brand';
+import { ArrowUpRight } from 'lucide-react';
+import { SpatialHero } from '../components/SpatialHero';
 import { products, type Post } from '../content/site';
 import { EditorialArt } from '../components/Art';
 import { ProductScreenshot } from '../components/ProductScreenshot';
@@ -16,17 +16,7 @@ const editorial = {
 
 export function Home() {
   return <div className="craft-home">
-    <section className="craft-hero" id="overview">
-      <div className="craft-register"><span>MAPSEEK</span><span>空间数据 · 空间编辑 · 地图设计</span></div>
-      <div className="craft-hero-core" data-scroll-context="地理空间创作工具">
-        <div className="craft-insignia"><BrandMark /></div>
-        <p className="craft-suite-label">Mapseek<span>地理空间创作工具</span></p>
-        <h1>为地理空间工作，<br /><em>重新设计</em>工具。</h1>
-        <p className="craft-hero-description">管理数据，编辑空间，设计地图。<br />三款独立产品，让每一步工作更专注。</p>
-        <div className="craft-hero-actions"><a className="craft-button" href="#products">认识三款产品<ArrowDown size={16} aria-hidden="true" /></a><a className="craft-button craft-button-outline" href="#screens">浏览产品界面<ArrowUpRight size={16} aria-hidden="true" /></a></div>
-      </div>
-      <nav className="craft-product-index" id="products" aria-label="产品快速导航">{products.map(product => <a href={`#${product.id}`} key={product.id}><span><strong>{product.id[0].toUpperCase() + product.id.slice(1)}</strong><small>{product.label}</small></span><ArrowRight size={20} aria-hidden="true" /></a>)}</nav>
-    </section>
+    <SpatialHero />
     {products.map(product => {
       const name = product.id[0].toUpperCase() + product.id.slice(1);
       const copy = editorial[product.id];
