@@ -48,6 +48,7 @@ export function CraftRail({ home }: { home: boolean }) {
     let width = innerWidth, height = innerHeight, documentHeight = 1;
     let headerHeight = 48, stripHeight = 38, gutter = 120;
     let positions: number[] = [];
+    let boundaries: { element: HTMLElement; y: number }[] = [];
     let contexts: { y: number; text: string }[] = [];
     let glyphWidths: number[][] = [];
     let labelWidths: number[] = [];
@@ -57,7 +58,7 @@ export function CraftRail({ home }: { home: boolean }) {
     const context = canvas.getContext('2d');
 
     const measure = () => {
-      width = innerWidth; height = innerHeight;
+      width = document.documentElement.clientWidth; height = innerHeight;
       const styles = getComputedStyle(site);
       headerHeight = parseFloat(styles.getPropertyValue('--craft-header-h')) || 48;
       stripHeight = parseFloat(styles.getPropertyValue('--craft-strip-h')) || 38;
@@ -68,6 +69,9 @@ export function CraftRail({ home }: { home: boolean }) {
         const element = document.getElementById(chapter.id);
         return element ? element.getBoundingClientRect().top + scrollY : 0;
       });
+      boundaries = [...site.querySelectorAll<HTMLElement>('[data-section-boundary]')].map(element => ({
+        element, y: element.getBoundingClientRect().top + scrollY,
+      }));
       contexts = [...document.querySelectorAll<HTMLElement>('[data-scroll-context]')].map(element => ({
         y: element.getBoundingClientRect().top + scrollY,
         text: element.dataset.scrollContext || '',
@@ -112,62 +116,102 @@ export function CraftRail({ home }: { home: boolean }) {
       const start = positions[nextIndex];
       const end = positions[nextIndex + 1] ?? documentHeight + height;
       if (sectionProgress.current) sectionProgress.current.style.transform = `scaleX(${clamp((y + chrome - start) / Math.max(1, end - start))})`;
+      // Reveal the two junction ticks only as their section boundary enters the reading area.
+      // No timer or permanent luminous border: the same position gives the same result in reverse.
+      boundaries.forEach(({ element, y: boundaryY }) => {
+        const screenY = boundaryY - y;
+        const enter = ease(clamp((height - 24 - screenY) / Math.max(80, height * .18)));
+        const leave = ease(clamp((screenY - chrome + 2) / 20));
+        const visible = enter * leave;
+        element.style.setProperty('--boundary-visibility', visible.toFixed(4));
+        element.style.setProperty('--boundary-scale', (reduce.matches ? 1 : interpolate(.45, 1, enter)).toFixed(4));
+        element.dataset.visible = String(visible > .01);
+      });
+      site.dataset.boundariesReady = 'true';
       if (width < 1100) return;
 
-      // Past labels form a quiet top stack. The next word rides a curved path up the edge.
+      // Four scroll-bound poses: queued horizontal -> quarter-turn -> vertical rail -> horizontal dock.
+      // The middle phase holds a real -90deg baseline; it must not be a single sinusoidal tilt.
       const trigger = chrome + 26;
       let settled = 0;
       positions.forEach((position, index) => { if (position <= y + trigger) settled = index; });
       const next = Math.min(chapters.length - 1, settled + 1);
-      const distance = Math.max(160, height * .68 - trigger);
-      const travel = next > settled ? ease(clamp((y - (positions[next] - height * .68)) / distance)) : 0;
+      const boundaryY = positions[next] - y;
+      const entryStart = height * .88;
+      const entryEnd = Math.max(chrome + 290, height * .68);
+      const dockStart = Math.min(height * .45, chrome + 240);
+      const entry = next > settled ? clamp((entryStart - boundaryY) / Math.max(80, entryStart - entryEnd)) : 0;
+      const docking = next > settled ? clamp((dockStart - boundaryY) / Math.max(90, dockStart - trigger)) : 0;
       const right = width - Math.max(64, gutter * .45);
+      const railX = width - 74; // Leave a clear gap before the numeric ruler.
       const top = chrome + 18;
+      const small = .5, vertical = .625;
       chapters.forEach((chapter, index) => {
         const isIncoming = index === next && next !== settled;
         const done = index < settled;
         const futureY = height - 48 - (chapters.length - 1 - index) * 26;
-        let labelY = done ? top + index * 23 : index === settled ? top + settled * 23 + 22 : futureY;
-        let scale = done || index > settled ? .5 : 1;
-        if (index === settled && travel > 0) {
-          labelY = interpolate(labelY, top + index * 23, travel);
-          scale = interpolate(1, .5, travel);
+        const dockY = top + index * 23 + 38;
+        const pastY = top + index * 23 + 8;
+        let labelY = done ? pastY : index === settled ? dockY : futureY;
+        let scale = done || index > settled ? small : 1;
+        if (index === settled && docking > 0 && !reduce.matches) {
+          labelY = interpolate(dockY, pastY, ease(docking));
+          scale = interpolate(1, small, ease(docking));
         }
-        if (isIncoming) { labelY = interpolate(futureY, top + index * 23 + 22, travel); scale = interpolate(.5, 1, travel); }
         if (reduce.matches) {
-          scale = index === nextIndex ? 1 : .5;
-          labelY = index < nextIndex ? top + index * 23 : index === nextIndex ? top + index * 23 + 22 : futureY;
-        }
-        const link = links.current[index];
-        if (link) {
-          link.style.left = `${right - labelWidths[index] * scale - 8}px`;
-          link.style.top = `${labelY - 9}px`;
-          link.style.width = `${labelWidths[index] * scale + 16}px`;
-          link.style.height = `${Math.max(24, 36 * scale)}px`;
-          link.style.pointerEvents = isIncoming && travel > .02 && travel < .98 && !reduce.matches ? 'none' : 'auto';
+          scale = index === nextIndex ? 1 : small;
+          labelY = index < nextIndex ? pastY : index === nextIndex ? dockY : futureY;
         }
         let offset = 0;
-        const isHighlighted = index === nextIndex;
+        const boxes: { left: number; right: number; top: number; bottom: number }[] = [];
+        const phase = isIncoming && !reduce.matches
+          ? docking > 0 ? 'docking' : entry >= 1 ? 'vertical' : entry > 0 ? 'turning' : 'queued'
+          : index === (reduce.matches ? nextIndex : settled) ? 'docked' : done ? 'past' : 'queued';
         letters.current[index]?.forEach((letter, characterIndex) => {
           if (!letter) return;
-          let x = right - labelWidths[index] * scale + offset * scale;
+          const glyphWidth = glyphWidths[index][characterIndex];
+          let glyphScale = scale;
+          let x = right - labelWidths[index] * scale + (offset + glyphWidth / 2) * scale;
           let letterY = labelY, rotation = 0;
-          if (isIncoming && travel > 0 && travel < 1 && !reduce.matches) {
-            const q = clamp((travel - characterIndex * .012) / (1 - (chapter.label.length - 1) * .012));
-            const curve = Math.sin(Math.PI * q);
-            letterY = interpolate(futureY, top + index * 23 + 22, q);
-            const angle = -curve * 68 * Math.PI / 180;
-            const local = (offset - labelWidths[index] / 2) * scale;
-            x = right - labelWidths[index] * scale / 2 + Math.cos(angle) * local + curve * Math.min(32, gutter * .23);
-            letterY += Math.sin(angle) * local;
-            x = Math.min(width - 20 - glyphWidths[index][characterIndex] * scale / 2, x);
-            rotation = -curve * 68;
+          if (isIncoming && !reduce.matches) {
+            // The leading end turns first, then the remaining characters follow; the word is
+            // rigid and readable during its vertical travel, rather than spaced on a diagonal.
+            const lag = 1 - characterIndex / Math.max(1, chapter.label.length - 1);
+            const turn = ease(clamp((entry - lag * .18) / .82));
+            const dock = ease(clamp((docking - lag * .26) / .74));
+            const queuedX = right - labelWidths[index] * small + (offset + glyphWidth / 2) * small;
+            const verticalY = boundaryY + (labelWidths[index] - offset - glyphWidth / 2) * vertical;
+            const dockX = right - labelWidths[index] + offset + glyphWidth / 2;
+            x = interpolate(interpolate(queuedX, railX, turn), dockX, dock);
+            letterY = interpolate(interpolate(futureY, verticalY, turn), dockY, dock);
+            glyphScale = interpolate(interpolate(small, vertical, turn), 1, dock);
+            rotation = -90 * turn * (1 - dock);
           }
-          letter.style.transform = `translate3d(${x.toFixed(2)}px,${letterY.toFixed(2)}px,0) rotate(${rotation.toFixed(2)}deg) scale(${scale.toFixed(4)})`;
-          letter.style.color = isHighlighted ? 'var(--craft-ink)' : 'var(--craft-orbit-muted)';
-          letter.dataset.active = String(isHighlighted);
-          offset += glyphWidths[index][characterIndex];
+          const radians = rotation * Math.PI / 180;
+          const halfWidth = (Math.abs(Math.cos(radians)) * glyphWidth + Math.abs(Math.sin(radians)) * 32) * glyphScale / 2;
+          const halfHeight = (Math.abs(Math.sin(radians)) * glyphWidth + Math.abs(Math.cos(radians)) * 32) * glyphScale / 2;
+          x = Math.max(halfWidth + 4, Math.min(width - 62 - halfWidth, x));
+          boxes.push({ left: x - halfWidth, right: x + halfWidth, top: letterY - halfHeight, bottom: letterY + halfHeight });
+          const emphasized = reduce.matches ? index === nextIndex : index === settled || (isIncoming && docking > .7);
+          letter.style.transform = `translate3d(${x.toFixed(3)}px,${letterY.toFixed(3)}px,0) translate(-50%,-50%) rotate(${rotation.toFixed(3)}deg) scale(${glyphScale.toFixed(5)})`;
+          letter.style.color = emphasized ? 'var(--craft-ink)' : 'var(--craft-orbit-muted)';
+          letter.dataset.active = String(emphasized);
+          letter.dataset.phase = phase;
+          offset += glyphWidth;
         });
+        // The hit area follows the actual rotated glyph bounds, including the vertical hold.
+        const link = links.current[index];
+        if (link && boxes.length) {
+          const left = Math.min(...boxes.map(box => box.left)) - 6;
+          const rightEdge = Math.min(width - 60, Math.max(...boxes.map(box => box.right)) + 6);
+          const topEdge = Math.min(...boxes.map(box => box.top)) - 5;
+          const bottom = Math.max(...boxes.map(box => box.bottom)) + 5;
+          link.style.left = `${left}px`; link.style.top = `${topEdge}px`;
+          link.style.width = `${Math.max(24, rightEdge - left)}px`;
+          link.style.height = `${Math.max(28, bottom - topEdge)}px`;
+          link.style.pointerEvents = 'auto';
+          link.dataset.phase = phase;
+        }
       });
       stage.current?.setAttribute('data-ready', 'true');
     };
@@ -262,6 +306,7 @@ export function CraftRail({ home }: { home: boolean }) {
       rulerElement?.removeEventListener('pointerdown', rulerDown); rulerElement?.removeEventListener('pointermove', rulerMove);
       rulerElement?.removeEventListener('pointerup', rulerUp); rulerElement?.removeEventListener('pointercancel', rulerUp); rulerElement?.removeEventListener('keydown', rulerKey);
       delete root.dataset.scrollEngine;
+      delete site.dataset.boundariesReady;
     };
   }, [home]);
 
@@ -280,7 +325,7 @@ export function CraftRail({ home }: { home: boolean }) {
           <a href={`#${entry.id}`} ref={element => { links.current[index] = element; }} className="orbit-link" aria-label={`前往 ${entry.name}`} aria-current={current.index === index ? 'location' : undefined}>
             <span className="orbit-fallback">{entry.name}</span>
           </a>
-          {Array.from(entry.label).map((letter, i) => <span aria-hidden="true" className="orbit-letter" ref={element => { (letters.current[index] ??= [])[i] = element; }} key={i}>{letter}</span>)}
+          {Array.from(entry.label).map((letter, i) => <span aria-hidden="true" className="orbit-letter" data-chapter={entry.id} ref={element => { (letters.current[index] ??= [])[i] = element; }} key={i}>{letter}</span>)}
         </Fragment>)}
       </nav>
       <div ref={ruler} className="craft-scroll-ruler" role="scrollbar" aria-label="页面阅读进度" aria-controls="main-content" aria-orientation="vertical" tabIndex={0} aria-valuemin={0} aria-valuemax={100} aria-valuenow={0}>

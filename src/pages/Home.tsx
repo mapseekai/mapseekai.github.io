@@ -1,4 +1,5 @@
 import { ArrowUpRight } from 'lucide-react';
+import { SectionBoundary } from '../components/SectionBoundary';
 import { SpatialHero } from '../components/SpatialHero';
 import { products, type Post } from '../content/site';
 import { EditorialArt } from '../components/Art';
@@ -20,7 +21,7 @@ export function Home() {
     {products.map(product => {
       const name = product.id[0].toUpperCase() + product.id.slice(1);
       const copy = editorial[product.id];
-      return <section className={`product-chapter craft-chapter craft-${product.id}`} id={product.id} key={product.id}>
+      return <section className={`product-chapter craft-chapter craft-${product.id}`} id={product.id} key={product.id} data-boundary-host="true"><SectionBoundary />
         <div className="craft-register"><span>MAPSEEK {name.toUpperCase()}</span><span>{product.label}</span></div>
         <div className="craft-chapter-intro" data-reveal data-scroll-context={product.label}>
           <p className="craft-product-name">Mapseek <span>{name}</span></p>
@@ -33,7 +34,7 @@ export function Home() {
             role="group" data-scroll-context={`${name} · 产品能力`} aria-label={`${name} 产品特点`}>{product.features.map(feature => <article key={feature.title} data-reveal><h3>{feature.title}</h3><p>{feature.text}</p></article>)}</div>
       </section>;
     })}
-    <section className="craft-end" data-reveal><h2>下一张地图，<br /><em>由你开始。</em></h2><p>找到适合你的工作方式。</p><nav aria-label="选择产品">{products.map(product => <a href={`/products/${product.id}/`} key={product.id}>{product.id[0].toUpperCase() + product.id.slice(1)}<ArrowUpRight size={17} aria-hidden="true" /></a>)}</nav></section>
+    <section className="craft-end" data-boundary-host="true"><SectionBoundary /><h2 data-reveal>下一张地图，<br /><em>由你开始。</em></h2><p data-reveal>找到适合你的工作方式。</p><nav data-reveal aria-label="选择产品">{products.map(product => <a href={`/products/${product.id}/`} key={product.id}>{product.id[0].toUpperCase() + product.id.slice(1)}<ArrowUpRight size={17} aria-hidden="true" /></a>)}</nav></section>
     <span id="workflow" className="craft-anchor" />
   </div>;
 }

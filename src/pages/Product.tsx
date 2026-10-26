@@ -1,3 +1,4 @@
+import { SectionBoundary } from '../components/SectionBoundary';
 import { ArrowLeft, ArrowUpRight } from 'lucide-react';
 import { products, type Product as ProductData } from '../content/site';
 import { CloudExperience, DesignExperience, LoomExperience } from '../components/ProductExperiences';
@@ -17,8 +18,8 @@ export function ProductPage({ product }: { product: ProductData }) {
     <div className="craft-detail-inner">
       <a className="craft-back" href="/#products"><ArrowLeft size={14} />全部产品</a>
       <section className="craft-detail-heading"><div><ProductMark product={product.id} large /><h1>{product.name}</h1><p className="craft-product-label">{product.label}</p></div><div><h2>{product.tagline}</h2><p>{product.detail}</p>{appUrl ? <ExternalLink className="craft-button" href={appUrl}>打开 {name}<ArrowUpRight size={17} /></ExternalLink> : <a className="craft-button" href={`/blog/${product.note}/`}>阅读产品笔记<ArrowUpRight size={17} /></a>}</div></section>
-      <div id="product-screens"><ProductScreenshot product={product.id} /></div>
-      <section id="product-features" data-scroll-context={`${name} · 产品能力`} className="craft-detail-features" aria-label={`${name} 产品介绍`}>{product.features.map((feature) => <article key={feature.title}><h2>{feature.title}</h2><p>{feature.text}</p></article>)}</section>
+      <div id="product-screens" data-boundary-host="true"><SectionBoundary /><ProductScreenshot product={product.id} /></div>
+      <section id="product-features" data-scroll-context={`${name} · 产品能力`} className="craft-detail-features" aria-label={`${name} 产品介绍`} data-boundary-host="true"><SectionBoundary />{product.features.map((feature) => <article key={feature.title}><h2>{feature.title}</h2><p>{feature.text}</p></article>)}</section>
       <details className="craft-demo" id="product-preview"><summary>打开功能交互示意<small>本地示例，不是产品截图</small></summary>{product.id === 'cloud' ? <CloudExperience /> : product.id === 'loom' ? <LoomExperience /> : <DesignExperience />}<p className="demo-disclaimer">交互概念演示，用于说明产品方向。示意数据在当前页面运行，未连接产品服务。</p></details>
       <section id="product-related" data-scroll-context="继续认识 Mapseek" className="craft-detail-related"><h2>继续认识 Mapseek。</h2><div>{products.filter((entry) => entry.id !== product.id).map((entry) => <a href={`/products/${entry.id}/`} key={entry.id}><ProductMark product={entry.id} /><span><strong>Mapseek {entry.id[0].toUpperCase() + entry.id.slice(1)}</strong><small>{entry.label}</small></span><ArrowUpRight size={20} /></a>)}</div></section>
     </div>

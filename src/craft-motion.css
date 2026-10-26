@@ -64,7 +64,7 @@ html[data-scroll-engine='lenis'], html[data-scroll-engine='lenis'] body { scroll
 .craft-reading-rail:not([data-ready]) .orbit-link:nth-of-type(2) { bottom: 120px; }
 .craft-reading-rail:not([data-ready]) .orbit-link:nth-of-type(3) { bottom: 80px; }
 .craft-reading-rail[data-ready] .orbit-fallback { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-.orbit-letter { display: none; position: fixed; top: 0; left: 0; font: 650 32px/1 var(--craft-display); transform-origin: left top; text-shadow: 0 0 4px var(--craft-paper), 0 0 12px var(--craft-paper); pointer-events: none; white-space: pre; }
+.orbit-letter { display: none; position: fixed; top: 0; left: 0; font: 650 32px/1 var(--craft-display); transform-origin: center center; text-shadow: 0 0 4px var(--craft-paper), 0 0 12px var(--craft-paper); pointer-events: none; white-space: pre; }
 .craft-reading-rail[data-ready] .orbit-letter { display: block; }
 .orbit-link:focus-visible { outline: 2px solid var(--craft-accent); outline-offset: 5px; }
 .craft-scroll-ruler { position: fixed; right: 10px; top: calc(var(--craft-header-h) + var(--craft-strip-h) + 12px); bottom: 52px; width: 18px; background: repeating-linear-gradient(to bottom,var(--craft-rule) 0,var(--craft-rule) 1px,transparent 1px,transparent 40px); pointer-events: none; }
@@ -134,3 +134,18 @@ html[data-scroll-engine='lenis'], html[data-scroll-engine='lenis'] body { scroll
 }
 
 html:has(.screenshot-dialog[open]) { overflow-y: hidden; scrollbar-gutter: stable; }
+
+/* Eleven-pixel T junctions, measured on the reference section frame. */
+.craft-site [data-boundary-host] { position: relative; }
+.section-boundary { position: absolute; top: -1px; left: 0; right: 0; height: 0; z-index: 4; pointer-events: none; user-select: none; }
+.section-boundary-tick { position: absolute; top: -5px; width: 11px; height: 11px; color: color-mix(in srgb, var(--craft-ink) 45%, transparent); transform-origin: center; }
+.section-boundary-tick.edge-left { left: -6px; }
+.section-boundary-tick.edge-right { right: -6px; }
+.section-boundary-tick::before, .section-boundary-tick::after { content: ''; position: absolute; display: block; background: currentColor; }
+.section-boundary-tick::before { left: 5px; top: 5px; width: 1px; height: 6px; }
+.section-boundary-tick::after { left: 0; top: 5px; width: 11px; height: 1px; }
+.craft-site[data-boundaries-ready] .section-boundary { opacity: var(--boundary-visibility, 0); }
+.craft-site[data-boundaries-ready] .section-boundary-tick { transform: scale(var(--boundary-scale, 1)); }
+@media (prefers-reduced-motion: reduce) {
+  .craft-site[data-boundaries-ready] .section-boundary-tick { transform: none; }
+}
