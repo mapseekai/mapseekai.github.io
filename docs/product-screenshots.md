@@ -1,0 +1,38 @@
+# 产品截图交付与替换
+
+## 三个位置
+
+首页与产品详情页共用 `src/content/product-media.ts` 中的三个位置。当前 `src: null`，页面会显示“预留给真实产品截图”，不会请求不存在的图片，也不会把交互示例当成真实截图。
+
+| 产品 | 推荐文件 | 应展示的内容 |
+| --- | --- | --- |
+| Cloud | `public/screenshots/cloud-overview.webp` | 数据目录、资源列表、地图预览，打开一个真实示例项目 |
+| Loom | `public/screenshots/loom-editor.webp` | 选中要素后的地图、编辑节点、属性面板 |
+| Design | `public/screenshots/design-studio.webp` | 实际地图作品、样式编辑区；有真实 AI 交互时再展示 AI 面板 |
+
+推荐 1600 × 1000 像素（16:10），也接受原始比例。使用原始清晰截图，不拼接虚构界面；去除个人账号、邮箱、密钥和私有项目名称。推荐 WebP/AVIF，支持 PNG/JPEG。
+
+## 替换
+
+1. 将截图放进上表的文件位置。
+2. 编辑 `src/content/product-media.ts`，为对应产品填入公开路径，并填写图片的实际宽高与 alt 描述。
+
+```ts
+cloud: {
+  src: '/screenshots/cloud-overview.webp',
+  alt: 'Mapseek Cloud 中的示例项目、空间资源目录与地图预览',
+  caption: '数据目录与地图预览',
+  width: 1600,
+  height: 1000,
+},
+```
+
+无需修改 JSX 或 CSS。首页与详情页自动同时使用新图；图片保持完整比例，并显示“查看原图”。点击可放大，Esc 关闭并将焦点返回原按钮。
+
+图片加载失败时会回退到标记为“截图暂时无法加载”的占位，不显示破损图标。尚未有截图的产品继续保留 `src: null`。
+
+## 本地与发布
+
+执行 `pnpm build && pnpm test` 验证。推送 `main` 后由现有 GitHub Pages 工作流发布。
+
+`artifacts/photocraft-20261026/` 中的参考网站截图、测试图片和本地检查文件不上传公开仓库。

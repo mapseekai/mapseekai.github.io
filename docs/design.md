@@ -1,9 +1,11 @@
-# 官网信息架构
+# 官网设计说明
 
-本版按用户最新要求，独立设计而非套用 Hallmark 主题。
+当前版本参考用户指定的 [PhotoCraft 官方产品页](https://getartcraft.com/apps/photocraft)，围绕 Mapseek Cloud、Loom、Design 三款产品重新设计。
 
-首页只包含品牌首屏、产品引导、Cloud、Loom、Design 和简洁收尾。
-三款产品分别使用数据目录、节点编辑和地图画板表现用途，交互示意与真实产品能力声明分开。
-三个产品详情页采用相同组件；原有 12 条页面路由和 404 行为保留。
+完整系统见 [design.md](../design.md)。真实产品截图的位置与替换方式见 [product-screenshots.md](product-screenshots.md)。
 
-设计规范见 [design.md](../design.md)。资源来源见 [asset-sources.md](asset-sources.md)。
+本版以浅灰纸面、粗字、细线、编号和大幅图片为主，提供完整明暗主题。此前的山景与模拟界面不再承担首页宣传视觉。
+
+三个截图位置在首页和详情页共用配置，当前明确保留占位。详情页的本地功能示例收进折叠区，继续明确其与真实产品截图的区别。
+
+站点保留 12 个现有页面及独立 404。旧版检查记录属于其各自版本，不代表当前发布。

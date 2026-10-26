@@ -1,14 +1,15 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-// Product-edition behavior replaces the retired character-field/workflow homepage.
+// PhotoCraft-inspired product pages reserve real screenshot slots; existing demos remain in explicit disclosures.
 test("Cloud resource selection and visibility controls update the sample", async ({
   page,
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto("/");
-  await expect(page.locator("h1")).toContainText("创造的起点");
+  await page.goto("/products/cloud/");
+  await page.locator(".craft-demo summary").click();
+  await expect(page.locator("h1")).toContainText("mapseek-cloud");
   await page.locator(".catalog-select").nth(1).click();
   await expect(page.locator(".resource-detail > strong")).toHaveText(
     "研究范围",
@@ -27,6 +28,7 @@ test("Loom node editing supports keyboard, undo and reset", async ({
   page,
 }) => {
   await page.goto("/products/loom/");
+  await page.locator(".craft-demo summary").click();
   const node = page.getByRole("button", { name: "编辑节点 1", exact: true });
   await node.focus();
   await page.keyboard.press("ArrowRight");
@@ -47,6 +49,7 @@ test("Design switches palette, labels and exports a self-contained SVG", async (
   page,
 }) => {
   await page.goto("/products/design/");
+  await page.locator(".craft-demo summary").click();
   for (const mood of ["paper", "night", "forest"]) {
     await page.locator(`.mood-option.${mood}`).click();
     await expect(page.locator(`.artboard-surface.mood-${mood}`)).toBeVisible();
@@ -70,6 +73,7 @@ test("product routes load directly and refresh with real content", async ({
     await expect(page.locator("h1")).toHaveText(`mapseek-${product}`);
     await page.reload();
     await expect(page.locator("h1")).toHaveText(`mapseek-${product}`);
+    await page.locator(".craft-demo summary").click();
     await expect(
       page.getByText(
         "交互概念演示，用于说明产品方向。示意数据在当前页面运行，未连接产品服务。",
@@ -119,7 +123,7 @@ test("mobile navigation closes with Escape and restores focus", async ({
   await page.keyboard.press("Escape");
   await expect(page.getByRole("button", { name: "打开导航" })).toBeFocused();
   await page.getByRole("button", { name: "打开导航" }).click();
-  await page.locator('#atelier-navigation a[href="/#design"]').click();
+  await page.locator('#craft-navigation a[href="/#design"]').click();
   await expect(page).toHaveURL(/#design$/);
   await expect(page.getByRole("button", { name: "打开导航" })).toHaveAttribute(
     "aria-expanded",
@@ -154,7 +158,7 @@ test("unknown routes return a real 404 and a recovery link", async ({
 }) => {
   expect((await page.goto("/not-a-page/"))?.status()).toBe(404);
   await page.getByRole("link", { name: "返回首页" }).click();
-  await expect(page.locator("h1")).toContainText("创造的起点");
+  await expect(page.locator("h1")).toContainText("为地理空间工作");
 });
 
 test("primary pages have no automated WCAG A/AA violations", async ({
@@ -185,7 +189,8 @@ test("reduced motion preserves the functional product states without animation",
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/products/design/");
+  await page.locator(".craft-demo summary").click();
   await page.locator(".mood-option.night").click();
   await expect(page.locator(".artboard-surface.mood-night")).toBeVisible();
   expect(
@@ -196,4 +201,16 @@ test("reduced motion preserves the functional product states without animation",
           .filter((animation) => animation.playState === "running").length,
     ),
   ).toBe(0);
+});
+
+
+test("theme preference persists and all screenshot slots remain honest", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator('[data-media-state="reserved"]')).toHaveCount(3);
+  await page.getByRole("button", { name: "切换为深色模式" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-craft-theme", "dark");
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-craft-theme", "dark");
+  await page.getByRole("button", { name: "切换为浅色模式" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-craft-theme", "light");
 });

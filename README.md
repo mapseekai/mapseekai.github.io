@@ -1,8 +1,8 @@
 # MapseekAI Website
 
-[在线官网](https://mapseekai.github.io/) · [设计规范](design.md) · [资源来源](docs/asset-sources.md)
+[在线官网](https://mapseekai.github.io/) · [设计规范](design.md) · [截图替换](docs/product-screenshots.md) · [验证记录](docs/photocraft-validation.md)
 
-MapseekAI 的产品官网，以 Mapseek Cloud、Mapseek Loom 和 Mapseek Design 为核心。首页采用真实卫星影像与三个独立的可操作示例，分别展示数据组织、几何编辑和地图设计。
+MapseekAI 的产品官网，以 Cloud、Loom、Design 三款独立产品为核心。本版参考用户指定的 PhotoCraft 官方产品页，以浅灰纸面、粗字、细线与章节编号组织内容，支持明暗主题和章节导航。
 
 ## 本地开发
 
@@ -33,7 +33,9 @@ pnpm preview
 | Loom | `/products/loom/` | 节点拖拽、键盘移动、撤销与重置、属性查看 |
 | Design | `/products/design/` | 三套地图配色、标注开关、自包含 SVG 导出 |
 
-交互预览明确标注为功能示意。Cloud 的卫星影像来自 NASA/USGS，叠加范围与点位为示例；Loom 和 Design 的街区为合成示例数据，节点坐标是画布局部坐标。它们不调用真实产品服务，也不是产品运行截图。
+首页和详情页预留三张真实产品截图，配置集中在 `src/content/product-media.ts`。没有截图时显示明确占位，不请求不存在的图片。放入真实截图后自动支持放大查看、Esc 关闭与加载失败回退，详见 [截图替换](docs/product-screenshots.md)。
+
+原有交互预览保留在详情页的折叠区，明确标注为功能示意，而不是产品截图。Cloud 的卫星影像来自 NASA/USGS，叠加范围与点位为示例；Loom 和 Design 的街区为合成示例数据，节点坐标是画布局部坐标。它们不调用真实产品服务，也不是产品运行截图。
 
 既有 `/blog/`、文章详情和 `/open-source/` 路由继续保留，但不再作为首页展示模块。
 
@@ -41,13 +43,15 @@ pnpm preview
 
 - `src/pages/Home.tsx`：三产品首页。
 - `src/pages/Product.tsx`：产品详情。
-- `src/components/LandingShell.tsx`：产品导航和页脚。
+- `src/components/CraftShell.tsx`：产品导航、主题切换、章节读数和页脚。
+- `src/components/ProductScreenshot.tsx`：截图占位、实际图片与原图查看。
+- `src/content/product-media.ts`：三个共享截图配置。
 - `src/components/ProductExperiences.tsx`：三个交互示例与矢量地图。
-- `src/atelier.css`：产品官网的独立布局与动效。
+- `src/craft.css`：本版布局、明暗主题和响应式样式；旧样式仅用于保留页面及交互演示。
 - `src/content/site.ts`：产品事实、文章和链接。
 - `src/components/SiteMotion.tsx`：一次性入场效果及清理逻辑。
 
-首页影像使用本地响应式 WebP。页面不需要运行时第三方图片或字体请求；减少动态效果时关闭空间位移与入场效果，静态正文和地图在关闭 JavaScript 后仍可阅读。
+页面不需要运行时第三方图片或字体请求。主题偏好保存在本地；减少动态效果时停用过渡与入场效果。关闭 JavaScript 后仍可阅读全部产品和截图说明。
 
 ## 生产配置
 
@@ -64,11 +68,11 @@ VITE_DESIGN_URL=https://your-design.example
 
 ## 验证
 
-`pnpm test` 验证静态路由、内部链接、元数据、资源、三个交互示例的初始状态、无 JavaScript 回退与动效约定。
+`pnpm test` 验证静态路由、内部链接、元数据、截图占位、主题初始化、折叠示例、清理逻辑与 SVG 导出约定。
 
 浏览器回归脚本保存在 `tests/site.spec.ts`，通过 `pnpm test:e2e` 运行。测试服务使用独立端口 5190，运行前应确保它未被其他服务占用。
 
-本次产品版的实际浏览器检查通过 Ego 完成，结果和边界见 [验证记录](docs/product-edition-validation.md)。自动无障碍扫描不能代替人工审查。
+本次实际浏览器检查通过 Ego 完成，结果和边界见 [验证记录](docs/photocraft-validation.md)。本轮未运行 Playwright 套件。自动无障碍扫描不能代替人工审查。
 
 ## 发布
 

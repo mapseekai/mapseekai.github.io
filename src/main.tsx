@@ -4,6 +4,7 @@ import { App } from "./App";
 import { metadata } from "./content/site";
 import "./styles.css";
 import "./atelier.css";
+import "./craft.css";
 
 const root = document.getElementById("root");
 if (!root) throw new Error("Missing application root.");

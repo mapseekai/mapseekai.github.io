@@ -1,4 +1,4 @@
-import { LandingHeader, LandingFooter } from "./components/LandingShell";
+import { CraftHeader, CraftFooter, CraftRail } from "./components/CraftShell";
 import { ArrowUpRight } from "lucide-react";
 import { SiteMotion } from "./components/SiteMotion";
 import { Footer, Header } from "./components/Layout";
@@ -29,16 +29,18 @@ export function App({ path }: { path: string }) {
         </a>
       </section>
     );
+  const isProductSite = clean === "/" || Boolean(product);
   return (
-    <>
+    <div className={isProductSite ? "craft-site" : "legacy-site"}>
       <a className="skip-link" href="#main-content">
         跳到主要内容
       </a>
       <div id="top" />
-      {clean === "/" || product ? <LandingHeader /> : <Header path={clean} />}
-      <main id="main-content">{page}</main>
-      {clean === "/" || product ? <LandingFooter /> : <Footer />}
+      {isProductSite ? <CraftHeader path={clean} /> : <Header path={clean} />}
+      <div className={isProductSite ? "craft-frame" : undefined}><main id="main-content">{page}</main>
+      {isProductSite ? <CraftFooter /> : <Footer />}</div>
+      {isProductSite && <CraftRail home={clean === "/"} />}
       <SiteMotion path={clean} />
-    </>
+    </div>
   );
 }
