@@ -1,52 +1,50 @@
 # MapseekAI design system
 
-以现有产品内容为素材重新设计，不继承旧官网的布局。Hallmark 后续页面统一读取本文件。
+## Reference and direction
 
-## 方向
+Hallmark **Cobalt** is the primary reference: https://www.usehallmark.com/themes/cobalt/ .
+This revision replaces the previous dark hero by explicit user request. Use Cobalt's light field, hairlines, opposite-corner cuts and keycap controls; adapt its blue signal to Mapseek green. Do not combine unrelated catalog themes.
 
-- 类型：专业产品网站，modern-minimal。
-- 核心：先展示可操作的地图，再让访客选择 Cloud、Loom、Design。
-- 品牌：保留 MapseekAI 标识和绿色识别；深绿首屏、近白内容区、浅绿工作流与收尾。
-- 首屏：产品工作台与品牌主张并置；地图可以切换产品语境，不增加无效注册或订阅入口。
-- 产品区：纵向大幅展示，使用地图、几何节点与配色表达产品用途。
-- 内容：产品描述、文章和公开链接以 `src/content/site.ts` 为准，不新增客户数、性能数字、评价或商标墙。
+## Brand and typography
 
-## Token
+- Brand accent: `--color-accent: #166447`; paper: `#f8fbf9`; ink: `#18352b`.
+- Graphite is a deep green `#103e31`, paired with its light ink. Reserve it for the interactive workflow band.
+- Chinese-first local typography: Avenir Next with PingFang SC / Microsoft YaHei fallback. This intentionally replaces Cobalt's Latin-only font recommendation without a third-party font request.
+- Body 16px, secondary text 14px, application labels 12px. Headings share one weight and colour.
+- All palette, spacing, motion and map tokens live in `src/tokens.css`.
 
-`src/tokens.css` 是颜色、字体、间距、断点与地图配色的唯一来源。
+## Composition
 
-| 角色 | Token | 颜色 |
-| --- | --- | --- |
-| 页面背景 | `--color-paper` | `#f8faf7` |
-| 次级表面 | `--color-paper-2` | `#edf3ec` |
-| 浅绿区域 | `--color-paper-3` | `#dce9dc` |
-| 正文 | `--color-ink` | `#18352b` |
-| 辅助文字 | `--color-muted` | `#53665b` |
-| 品牌行动 | `--color-accent` | `#166447` |
-| 首屏背景 | `--color-field` | `#103e31` |
-| 深色区域正文 | `--color-field-ink` | `#f1f5e9` |
-| 浅绿行动背景 | `--color-highlight` | `#d7eeab` |
+- Hero: a concise two-line headline beside an animated character field derived from actual Natural Earth land geometry. No invented metrics or product dashboard.
+- Three products: a ruled text index, followed by **one** working map demonstration with product tabs. Never repeat the same map in three product cards.
+- Workflow: three selectable stages, connected input/output rows, and a route to the selected product. This is a relationship diagram, not a running backend workflow.
+- Ecosystem: the actual project registry. Journal: editorial rows, not a wall of thumbnails.
+- Existing product and article routes share the same type, borders and controls.
+- Container capped at 1440px; desktop gutter 64px, mobile 16px. Every image-bearing column can shrink.
+- Keycaps have a 3px bottom edge. Cut corners progressively enhance with `corner-shape`; regular corners remain the fallback.
 
-## 排版和布局
+## Motion
 
-- 中文优先，本地字体栈，不依赖远程字体服务；Avenir Next 用于可用系统的拉丁标题，中文回退苹方或微软雅黑。
-- 正文 16px，说明 14px，地图界面最小 12px；文章正文桌面 18px、手机 16px。
-- 标题同一颜色与字重，不设置装饰小标题、全大写标签或大字间距。
-- 内容容器上限 1440px，桌面内边距 64px；宽屏不无限拉伸。
-- 图片/地图网格使用 `minmax(0, ...)`；手机产品展示与文章列表单列。
-- 手机地图面板改为地图上方的横向控件，保留所有图层和配色操作。
+- Three primitives: feedback on controls, an on-entry reveal, and a pausable geographic field.
+- Keycaps travel 1px on hover and depress on press. Navigation underlines use scaleX.
+- Map product/theme changes crossfade with a 5px translation over 240ms.
+- Section entry uses the Web Animations API once, 480ms; the default document is always visible.
+- Workflow connectors draw once on stage selection; never an infinite moving data pipe.
+- Geographic field is capped at 24fps and device pixel ratio 2. Cancel animation frames offscreen, in hidden tabs, when paused, and during cleanup.
+- `prefers-reduced-motion` disables continuous motion, CSS animation and entry effects. A local SVG remains available without JavaScript or on data-fetch failure.
+- No parallax, automatic carousels, cursor followers, artificial counters or mandatory animations before navigation.
 
-## 控件和可访问性
+## Interaction and access
 
-- 主按钮高度 48px；导航按钮 44px；地图控件手机 44px。
-- 深色区域使用成对的背景与文字 Token；焦点轮廓立即显示。
-- 标签页支持方向键、Home、End；菜单支持 Escape 关闭与焦点返回。
-- 不新增自动播放、滚动跟随或循环动画；减少动态效果时关闭平滑滚动与过渡。
-- 静态渲染页面正文；页面里的地图仍标明“交互概念演示”，不冒充实际产品截图。
+- Quick access uses native `<dialog>`, product/page filtering, Cmd/Ctrl+K, arrow-key navigation and Escape.
+- Both map and workflow tabs implement Left/Right, Home and End, with aria-selected and labelled panels.
+- Preserve original product actions, map layer controls, zoom limits, article search, category filters and 404 behavior.
+- Focus rings appear instantly. Mobile hit targets are at least 44px where the layout permits.
+- Map demonstrations remain identified as local concept demonstrations. Publish no fictional registrations, customer numbers or releases.
 
-## 实现
+## Implementation
 
-- `src/tokens.css`：设计 Token。
-- `src/base.css`：Hallmark 基础规则。
-- `src/styles.css`：共享组件、页面布局和响应式样式。
-- `artifacts/hallmark-20261026/`：本次改版的截图、审查与测试证据。
+- `src/styles.css`: shared shell and homepage.
+- `src/workspace.css`: map workbench; `src/pages.css`: product and editorial routes.
+- `SpatialField.tsx`, `Workflow.tsx`, `CommandMenu.tsx`, `SiteMotion.tsx`: bounded interactions.
+- Data provenance: `docs/asset-sources.md`; validation: `docs/cobalt-validation.md`.

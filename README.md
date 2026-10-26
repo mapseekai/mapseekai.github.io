@@ -2,7 +2,7 @@
 
 [在线官网](https://mapseekai.github.io/) · [部署流程](docs/deployment.md)
 
-基于 React 和 TypeScript 的 MapseekAI 品牌官网，采用深绿色产品首屏与统一的响应式设计系统。重点呈现 `mapseek-cloud`、`mapseek-loom`、`mapseek-design`，并提供技术生态与博客入口。
+基于 React 和 TypeScript 的 MapseekAI 品牌官网，采用 Hallmark Cobalt 参考的浅色布局、Mapseek 绿色品牌与响应式交互设计。重点呈现 `mapseek-cloud`、`mapseek-loom`、`mapseek-design`，并提供技术生态与博客入口。
 
 ## 本地运行
 
@@ -97,8 +97,14 @@ pnpm test:e2e
 
 项目未接入注册、登录、订阅、表单提交、分析追踪或产品后端。所有可见主按钮都指向可用的本地页面、锚点或已核对的公开仓库。推送到 `main` 后会自动构建并发布官网。
 
-## Hallmark 改版记录
+## Hallmark Cobalt 改版
 
-2026-10-26 按现有产品内容重新设计，未沿用旧版布局。Hallmark 安装在全局 Skills 目录，不是项目依赖，也未向 AGENTS.md 注入规则。
+2026-10-26 按 Hallmark Cobalt 主题重新组织官网：保留 Mapseek 绿色，将重复地图卡片改成字符地理图形、产品索引与一个交互工作台。
 
-本地改版记录保存在 `artifacts/hallmark-20261026/`，不随公开仓库发布。已完成静态构建、页面测试和浏览器功能检查；自动无障碍扫描与完整响应式矩阵汇总尚未完成。原有 `tests/` 保持不变；改版时浏览器通过 Ego 运行，未运行 Playwright 测试套件。
+新增可暂停的字符 / 点阵地图、产品切换反馈、工作流阶段切换与连线、导航微交互、一次性区块入场和 Cmd/Ctrl+K 快速访问。减少动态效果、离屏和后台状态都有对应处理。所有素材本地提供，不新增第三方地图请求或动画库。
+
+- [设计系统](design.md)
+- [素材来源](docs/asset-sources.md)
+- [本轮验证与边界](docs/cobalt-validation.md)
+
+Hallmark 是全局设计 Skill，不是站点运行依赖；没有向 AGENTS.md 注入规则。本地原始截图和逐项结果保存在被 Git 忽略的 `artifacts/cobalt-20261026/`。原有测试文件未修改，新增改版回归测试由 `pnpm test` 一起运行。本轮浏览器检查使用 Ego，未运行原 Playwright 套件。

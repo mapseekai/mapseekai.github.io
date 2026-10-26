@@ -1,8 +1,8 @@
-/* Hallmark · MapseekAI shared design tokens · theme: brand · v2.0.0 */
+/* Hallmark · MapseekAI shared design tokens · theme: Cobalt / Mapseek green · v2.0.0 */
 @theme static {
-  --color-paper: #f8faf7;
-  --color-paper-2: #edf3ec;
-  --color-paper-3: #dce9dc;
+  --color-paper: #f8fbf9;
+  --color-paper-2: #f0f5f1;
+  --color-paper-3: #e4ede6;
   --color-ink: #18352b;
   --color-ink-2: #304c3f;
   --color-muted: #53665b;
@@ -16,8 +16,15 @@
   --color-field-ink: #f1f5e9;
   --color-field-muted: #c1d2c6;
   --color-field-rule: #496e5c;
-  --color-highlight: #d7eeab;
+  --color-highlight: #cee7d6;
   --color-white: #ffffff;
+  --field-glyph-soft: #b9d1c2;
+  --field-glyph-mid: #719f87;
+  --color-key-edge: #b9cbc0;
+  --color-accent-edge: #0c4430;
+  --color-field-line: #426856;
+  --color-header-shadow: #173f3012;
+  --color-backdrop: #142b2380;
   --color-error: #a8382e;
   --color-success: #166447;
   --font-body: "Arial", "PingFang SC", "Microsoft YaHei", sans-serif;
@@ -34,8 +41,8 @@
   --text-section: clamp(2rem, 3.1vw, 2.875rem);
   --text-title: clamp(1.25rem, 1.65vw, 1.5rem);
   --text-lead: clamp(1rem, 1.35vw, 1.125rem);
-  --radius-card: 16px;
-  --radius-input: 8px;
+  --radius-card: 8px;
+  --radius-input: 6px;
   --radius-pill: 999px;
   --shadow-card: none;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);

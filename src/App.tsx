@@ -1,4 +1,5 @@
 import { ArrowUpRight } from 'lucide-react';
+import { SiteMotion } from './components/SiteMotion';
 import { Footer, Header } from './components/Layout';
 import { Home } from './pages/Home';
 import { ProductPage } from './pages/Product';
@@ -17,5 +18,5 @@ export function App({ path }: { path: string }) {
   else if (clean === '/blog') page = <JournalPage/>;
   else if (clean === '/open-source') page = <EcosystemPage/>;
   else page = <section className="container not-found"><h1>这片区域，还没有被绘制。</h1><p>页面可能已移动，也可能是一个尚未标记的坐标。</p><a className="button" href="/">返回首页<ArrowUpRight size={16}/></a></section>;
-  return <><a className="skip-link" href="#main-content">跳到主要内容</a><div id="top"/><Header path={clean}/><main id="main-content">{page}</main><Footer/></>;
+  return <><a className="skip-link" href="#main-content">跳到主要内容</a><div id="top"/><Header path={clean}/><main id="main-content">{page}</main><Footer/><SiteMotion path={clean}/></>;
 }

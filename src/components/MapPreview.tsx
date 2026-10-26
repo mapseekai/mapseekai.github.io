@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Check, ChevronDown, Crosshair, Database, Eye, EyeOff, Layers, Minus, MousePointer2, Plus, RotateCcw, SlidersHorizontal, SquareDashedMousePointer } from 'lucide-react';
 import { products, type ProductId } from '../content/site';
 import { MapScene, type LayerId, type MapTheme } from './MapScene';
@@ -16,6 +16,15 @@ export function MapPreview({ initialMode = 'cloud', fixed = false }: { initialMo
   const [theme, setTheme] = useState<MapTheme>('forest');
   const [selected, setSelected] = useState(false);
   const id = useId();
+  const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const preference = matchMedia("(prefers-reduced-motion: reduce)");
+    if (preference.matches) return;
+    const animation = panelRef.current?.animate([{ opacity: 0.6, transform: "translateY(5px)" }, { opacity: 1, transform: "translateY(0)" }], { duration: 240, easing: "cubic-bezier(0.16,1,0.3,1)" });
+    const stop = () => { if (preference.matches) animation?.cancel(); };
+    preference.addEventListener("change", stop);
+    return () => { animation?.cancel(); preference.removeEventListener("change", stop); };
+  }, [mode, theme]);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const product = products.find((item) => item.id === mode)!;
 
@@ -44,7 +53,7 @@ export function MapPreview({ initialMode = 'cloud', fixed = false }: { initialMo
         ><span className="mono">0{index + 1}</span> {item.id[0].toUpperCase() + item.id.slice(1)}</button>)}
         <span className="workspace-tabs-label mono">地图工作台</span>
       </div>}
-      <div id={`${id}-panel`} role={fixed ? undefined : 'tabpanel'} aria-labelledby={fixed ? undefined : `${id}-tab-${mode}`} className="workspace-panel">
+      <div id={`${id}-panel`} role={fixed ? undefined : 'tabpanel'} aria-labelledby={fixed ? undefined : `${id}-tab-${mode}`} className="workspace-panel" ref={panelRef}>
         <div className="workspace-topbar"><span className="workspace-product"><Layers size={15} /> {product.name}</span><span className="workspace-breadcrumb">工作空间 <span>/</span> 城市空间研究 <ChevronDown size={12}/></span><span className="demo-tag">交互概念演示</span></div>
         <div className="workspace-body">
           <aside className="workspace-sidebar" aria-label="演示控制面板">

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ChevronDown, Menu, X } from 'lucide-react';
+import { CommandMenu } from './CommandMenu';
 import { Brand, BrandMark, Github } from './Brand';
 import { githubOrg, products } from '../content/site';
 
@@ -13,6 +14,13 @@ export function Header({ path }: { path: string }) {
   const headerRef = useRef<HTMLElement>(null);
   const menuRef = useRef<HTMLButtonElement>(null);
   const productRef = useRef<HTMLButtonElement>(null);
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => setScrolled(!entry.isIntersecting));
+    const top = document.getElementById("top");
+    if (top) observer.observe(top);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     function handleClick(event: PointerEvent) {
@@ -34,7 +42,7 @@ export function Header({ path }: { path: string }) {
     };
   }, [menuOpen, productsOpen]);
 
-  return <header className={`site-header ${path === '/' ? 'site-header-home' : ''}`} ref={headerRef}>
+  return <header className={`site-header ${path === '/' ? 'site-header-home' : ''}`} ref={headerRef} data-scrolled={scrolled}>
     <div className="header-inner container">
       <Brand />
       <button type="button" className="mobile-toggle icon-button" ref={menuRef} aria-label={menuOpen ? '关闭导航' : '打开导航'} aria-expanded={menuOpen} aria-controls="main-navigation" onClick={() => setMenuOpen((value) => !value)}>{menuOpen ? <X size={24} /> : <Menu size={24} />}</button>
@@ -48,7 +56,7 @@ export function Header({ path }: { path: string }) {
         <a className="nav-link" href="/blog/" aria-current={path.startsWith('/blog') ? 'page' : undefined}>博客</a>
         <div className="mobile-nav-products">{products.map((item) => <a href={`/products/${item.id}/`} key={item.id}>{item.name}</a>)}</div>
       </nav>
-      <div className="header-actions"><ExternalLink href={githubOrg} className="github-link"><Github size={20} /><span>GitHub</span></ExternalLink><a className="button button-small button-outline" href="/#products">探索产品</a></div>
+      <div className="header-actions"><CommandMenu /><ExternalLink href={githubOrg} className="github-link"><Github size={20} /><span>GitHub</span></ExternalLink><a className="button button-small button-outline" href="/#products">探索产品</a></div>
     </div>
   </header>;
 }
