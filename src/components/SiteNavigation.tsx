@@ -90,6 +90,7 @@ export function CraftHeader({ path }: { path: string }) {
 
 export function CraftFooter() {
   return <footer className="craft-footer craft-directory-footer" id="site-footer" data-scroll-context="网站导航">
+    <span className="section-divider" aria-hidden="true" />
     <div className="footer-directory">
       <div className="footer-brand-cell"><Brand /><p>空间数据、浏览器编辑<br />与 AI 地图设计。</p><span>为真实的地理空间工作而设计。</span></div>
       {footerGroups.map(group => <nav className="footer-link-column" aria-label={`页脚${group.title}`} key={group.title}><h2>{group.title}</h2>{group.items.map(item => <a key={item.href} href={item.href} target={item.external ? '_blank' : undefined} rel={item.external ? 'noopener noreferrer' : undefined}>{item.label}{item.external && <span className="sr-only">（在新标签页打开）</span>}</a>)}</nav>)}

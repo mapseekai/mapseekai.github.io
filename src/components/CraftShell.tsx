@@ -19,7 +19,8 @@ const detailChapters: Chapter[] = [
 ];
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
 const interpolate = (a: number, b: number, t: number) => a + (b - a) * t;
-const ease = (t: number) => t * t * (3 - 2 * t);
+// C2-continuous endpoints avoid a visible acceleration kink when a letter joins the vertical rail.
+const ease = (t: number) => t * t * t * (t * (t * 6 - 15) + 10);
 
 /** One measured timeline drives the pinned label, chapter lettering and scroll ruler. */
 export function CraftRail({ home }: { home: boolean }) {
@@ -46,7 +47,9 @@ export function CraftRail({ home }: { home: boolean }) {
     let lenis: Lenis | null = null;
     let frame = 0, requested = 0, previousY = -1, dirty = true;
     let width = innerWidth, height = innerHeight, documentHeight = 1;
-    let headerHeight = 48, stripHeight = 38, gutter = 120;
+    let headerHeight = 48, stripHeight = 38;
+    let rulerLeft = 0, rulerWidth = 60;
+    const headingSize = 34;
     let positions: number[] = [];
     let boundaries: { element: HTMLElement; y: number }[] = [];
     let contexts: { y: number; text: string }[] = [];
@@ -62,8 +65,9 @@ export function CraftRail({ home }: { home: boolean }) {
       const styles = getComputedStyle(site);
       headerHeight = parseFloat(styles.getPropertyValue('--craft-header-h')) || 48;
       stripHeight = parseFloat(styles.getPropertyValue('--craft-strip-h')) || 38;
-      const bounds = document.querySelector('.craft-frame')?.getBoundingClientRect();
-      gutter = bounds ? (width - bounds.width) / 2 : 120;
+      const rulerBounds = ruler.current?.getBoundingClientRect();
+      rulerLeft = rulerBounds?.left ?? width - 60;
+      rulerWidth = rulerBounds?.width || 60;
       documentHeight = Math.max(1, document.documentElement.scrollHeight - height);
       positions = chapters.map(chapter => {
         const element = document.getElementById(chapter.id);
@@ -76,7 +80,7 @@ export function CraftRail({ home }: { home: boolean }) {
         y: element.getBoundingClientRect().top + scrollY,
         text: element.dataset.scrollContext || '',
       }));
-      if (context) context.font = `650 32px ${styles.getPropertyValue('--craft-display')}`;
+      if (context) context.font = `620 ${headingSize}px ${styles.getPropertyValue('--craft-display')}`;
       glyphWidths = chapters.map(chapter => Array.from(chapter.label).map(letter => context?.measureText(letter).width || 20));
       labelWidths = glyphWidths.map(values => values.reduce((sum, value) => sum + value, 0));
       const rulerHeight = Math.max(1, height - headerHeight - stripHeight - 64);
@@ -137,21 +141,22 @@ export function CraftRail({ home }: { home: boolean }) {
       positions.forEach((position, index) => { if (position <= y + trigger) settled = index; });
       const next = Math.min(chapters.length - 1, settled + 1);
       const boundaryY = positions[next] - y;
-      const entryStart = height * .88;
-      const entryEnd = Math.max(chrome + 290, height * .68);
-      const dockStart = Math.min(height * .45, chrome + 240);
+      const incomingLength = labelWidths[next] * (20 / headingSize);
+      const entryStart = height - 36;
+      const entryEnd = entryStart - incomingLength - 100;
+      const dockStart = trigger + 72 + incomingLength * .84;
       const entry = next > settled ? clamp((entryStart - boundaryY) / Math.max(80, entryStart - entryEnd)) : 0;
       const docking = next > settled ? clamp((dockStart - boundaryY) / Math.max(90, dockStart - trigger)) : 0;
-      const right = width - Math.max(64, gutter * .45);
-      const railX = width - 74; // Leave a clear gap before the numeric ruler.
-      const top = chrome + 18;
-      const small = .5, vertical = .625;
+      const right = rulerLeft;
+      const railX = rulerLeft + rulerWidth / 2; // The reference places vertical lettering inside the ruler.
+      const top = headerHeight + 28;
+      const small = 16 / headingSize, vertical = 20 / headingSize;
       chapters.forEach((chapter, index) => {
         const isIncoming = index === next && next !== settled;
         const done = index < settled;
-        const futureY = height - 48 - (chapters.length - 1 - index) * 26;
-        const dockY = top + index * 23 + 38;
-        const pastY = top + index * 23 + 8;
+        const futureY = height - 36 - (chapters.length - 1 - index) * 20;
+        const dockY = top + index * 20 + 26;
+        const pastY = top + index * 20;
         let labelY = done ? pastY : index === settled ? dockY : futureY;
         let scale = done || index > settled ? small : 1;
         if (index === settled && docking > 0 && !reduce.matches) {
@@ -163,6 +168,7 @@ export function CraftRail({ home }: { home: boolean }) {
           labelY = index < nextIndex ? pastY : index === nextIndex ? dockY : futureY;
         }
         let offset = 0;
+        let maxDock = 0, minDock = 1, minTurn = 1, maxTurn = 0;
         const boxes: { left: number; right: number; top: number; bottom: number }[] = [];
         const phase = isIncoming && !reduce.matches
           ? docking > 0 ? 'docking' : entry >= 1 ? 'vertical' : entry > 0 ? 'turning' : 'queued'
@@ -173,28 +179,34 @@ export function CraftRail({ home }: { home: boolean }) {
           let glyphScale = scale;
           let x = right - labelWidths[index] * scale + (offset + glyphWidth / 2) * scale;
           let letterY = labelY, rotation = 0;
+          let glyphEmphasis = index === settled ? 1 - ease(docking) : 0;
           if (isIncoming && !reduce.matches) {
             // The leading end turns first, then the remaining characters follow; the word is
             // rigid and readable during its vertical travel, rather than spaced on a diagonal.
-            const lag = 1 - characterIndex / Math.max(1, chapter.label.length - 1);
-            const turn = ease(clamp((entry - lag * .18) / .82));
-            const dock = ease(clamp((docking - lag * .26) / .74));
-            const queuedX = right - labelWidths[index] * small + (offset + glyphWidth / 2) * small;
+            const fraction = characterIndex / Math.max(1, chapter.label.length - 1);
             const verticalY = boundaryY + (labelWidths[index] - offset - glyphWidth / 2) * vertical;
+            // A letter turns when it physically reaches the bend, not at a word-wide percentage.
+            const turn = ease(clamp((futureY + 36 - verticalY) / 100));
+            const dock = ease(clamp((trigger + 72 + offset * vertical * .84 - boundaryY) / (58 + fraction * 10)));
+            maxDock = Math.max(maxDock, dock); minDock = Math.min(minDock, dock);
+            minTurn = Math.min(minTurn, turn); maxTurn = Math.max(maxTurn, turn);
+            const queuedX = right - labelWidths[index] * small + (offset + glyphWidth / 2) * small;
             const dockX = right - labelWidths[index] + offset + glyphWidth / 2;
             x = interpolate(interpolate(queuedX, railX, turn), dockX, dock);
             letterY = interpolate(interpolate(futureY, verticalY, turn), dockY, dock);
             glyphScale = interpolate(interpolate(small, vertical, turn), 1, dock);
             rotation = -90 * turn * (1 - dock);
+            glyphEmphasis = dock;
           }
           const radians = rotation * Math.PI / 180;
-          const halfWidth = (Math.abs(Math.cos(radians)) * glyphWidth + Math.abs(Math.sin(radians)) * 32) * glyphScale / 2;
-          const halfHeight = (Math.abs(Math.sin(radians)) * glyphWidth + Math.abs(Math.cos(radians)) * 32) * glyphScale / 2;
-          x = Math.max(halfWidth + 4, Math.min(width - 62 - halfWidth, x));
+          const halfWidth = (Math.abs(Math.cos(radians)) * glyphWidth + Math.abs(Math.sin(radians)) * headingSize) * glyphScale / 2;
+          const halfHeight = (Math.abs(Math.sin(radians)) * glyphWidth + Math.abs(Math.cos(radians)) * headingSize) * glyphScale / 2;
+          x = Math.max(halfWidth + 4, Math.min(width - 4 - halfWidth, x));
           boxes.push({ left: x - halfWidth, right: x + halfWidth, top: letterY - halfHeight, bottom: letterY + halfHeight });
-          const emphasized = reduce.matches ? index === nextIndex : index === settled || (isIncoming && docking > .7);
+          if (reduce.matches) glyphEmphasis = index === nextIndex ? 1 : 0;
+          const emphasized = glyphEmphasis >= .5;
           letter.style.transform = `translate3d(${x.toFixed(3)}px,${letterY.toFixed(3)}px,0) translate(-50%,-50%) rotate(${rotation.toFixed(3)}deg) scale(${glyphScale.toFixed(5)})`;
-          letter.style.color = emphasized ? 'var(--craft-ink)' : 'var(--craft-orbit-muted)';
+          letter.style.color = `color-mix(in srgb, var(--craft-ink) ${(glyphEmphasis * 100).toFixed(2)}%, var(--craft-orbit-muted))`;
           letter.dataset.active = String(emphasized);
           letter.dataset.phase = phase;
           offset += glyphWidth;
@@ -203,14 +215,16 @@ export function CraftRail({ home }: { home: boolean }) {
         const link = links.current[index];
         if (link && boxes.length) {
           const left = Math.min(...boxes.map(box => box.left)) - 6;
-          const rightEdge = Math.min(width - 60, Math.max(...boxes.map(box => box.right)) + 6);
+          const rightEdge = Math.min(width - 2, Math.max(...boxes.map(box => box.right)) + 6);
           const topEdge = Math.min(...boxes.map(box => box.top)) - 5;
           const bottom = Math.max(...boxes.map(box => box.bottom)) + 5;
           link.style.left = `${left}px`; link.style.top = `${topEdge}px`;
           link.style.width = `${Math.max(24, rightEdge - left)}px`;
           link.style.height = `${Math.max(28, bottom - topEdge)}px`;
           link.style.pointerEvents = 'auto';
-          link.dataset.phase = phase;
+          link.dataset.phase = isIncoming && !reduce.matches
+            ? minDock >= .999 ? 'docked' : maxDock > .001 ? 'docking' : minTurn >= .999 ? 'vertical' : maxTurn > .001 ? 'turning' : 'queued'
+            : phase;
         }
       });
       stage.current?.setAttribute('data-ready', 'true');

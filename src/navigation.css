@@ -156,3 +156,6 @@ body:has(.craft-site) { min-width: 0; }
 @media(prefers-reduced-motion:reduce) { .site-nav-panel, .ruler-digit-strip { animation: none !important; transition: none !important; } }
 
 .ruler-tick[data-near="true"] b { opacity: 0; }
+
+/* The reference ruler overlays the outer margin; a soft paper mask separates moving text. */
+.craft-scroll-ruler::before { content: ''; position: absolute; inset: 0 0 0 -28px; background: color-mix(in srgb,var(--craft-paper) 55%,transparent); backdrop-filter: blur(9px); -webkit-backdrop-filter: blur(9px); mask-image: linear-gradient(to left,#000 40%,transparent); pointer-events: none; }

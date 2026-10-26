@@ -19,7 +19,7 @@ test('chapter lettering holds vertical before staggered horizontal docking, in b
     await expect(link).toHaveAttribute('data-phase', 'vertical');
     await expect.poll(angles).toEqual([-90, -90, -90, -90]);
   }
-  await moveBoundary(page, '#loom', 220);
+  await moveBoundary(page, '#loom', 170); // A short word reaches its per-glyph bend later than the former shared timeline.
   await expect(link).toHaveAttribute('data-phase', 'docking');
   await expect.poll(async () => new Set((await angles()).map(Math.round)).size).toBeGreaterThan(2);
   await moveBoundary(page, '#loom', 100);
@@ -56,4 +56,24 @@ test('reduced motion retains chapter links without vertical rotation', async ({ 
   expect(angles.every(angle => angle === 0)).toBe(true);
   await page.locator('.orbit-link[href="#loom"]').click();
   await expect(page.locator('.section-strip-title')).toContainText('Loom');
+});
+
+
+test('section rules reach both viewport edges while labels travel inside the ruler', async ({ page }) => {
+  for (const width of [1280, 1440, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    await expect(page.locator('.craft-reading-rail')).toHaveAttribute('data-ready', 'true');
+    const viewport = await page.evaluate(() => document.documentElement.clientWidth);
+    for (const rule of await page.locator('.section-divider').all()) {
+      await expect.poll(async () => (await rule.boundingBox())!.x).toBeCloseTo(0, 0);
+      expect((await rule.boundingBox())!.width).toBe(viewport);
+    }
+    await moveBoundary(page, '#loom', 480);
+    await expect(page.locator('.orbit-link[href="#loom"]')).toHaveAttribute('data-phase', 'vertical');
+    const centers = await page.locator('[data-chapter="loom"]').evaluateAll(nodes => nodes.map(node => {
+      const rect = node.getBoundingClientRect(); return rect.left + rect.width / 2;
+    }));
+    expect(centers.every(center => Math.abs(center - (viewport - 30)) < 1)).toBe(true);
+  }
 });

@@ -5,6 +5,24 @@ export function SiteMotion({ path }: { path: string }) {
   useEffect(() => {
     const media = matchMedia('(prefers-reduced-motion: reduce)');
     const animations = new Set<Animation>();
+    let dividerFrame = 0;
+    // Use the layout viewport, excluding the browser scrollbar. This also covers non-product pages.
+    const alignDividers = () => {
+      dividerFrame = 0;
+      const width = document.documentElement.clientWidth;
+      document.querySelectorAll<HTMLElement>('.section-divider').forEach(rule => {
+        const host = rule.parentElement;
+        if (!host) return;
+        rule.style.left = `${-host.getBoundingClientRect().left - host.clientLeft}px`;
+        rule.style.width = `${width}px`;
+      });
+    };
+    const requestAlignment = () => { if (!dividerFrame) dividerFrame = requestAnimationFrame(alignDividers); };
+    const dividerObserver = new ResizeObserver(requestAlignment);
+    const frame = document.querySelector('.craft-frame');
+    if (frame) dividerObserver.observe(frame);
+    window.addEventListener('resize', requestAlignment);
+    alignDividers();
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
@@ -27,7 +45,7 @@ export function SiteMotion({ path }: { path: string }) {
     document.querySelectorAll('[data-reveal],.craft-register,.screenshot-canvas').forEach(element => observer.observe(element));
     const stop = () => { if (media.matches) { animations.forEach(animation => animation.cancel()); animations.clear(); } };
     media.addEventListener('change', stop);
-    return () => { observer.disconnect(); animations.forEach(animation => animation.cancel()); media.removeEventListener('change', stop); };
+    return () => { dividerObserver.disconnect(); cancelAnimationFrame(dividerFrame); window.removeEventListener('resize', requestAlignment); observer.disconnect(); animations.forEach(animation => animation.cancel()); media.removeEventListener('change', stop); };
   }, [path]);
   return null;
 }
