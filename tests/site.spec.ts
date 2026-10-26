@@ -118,13 +118,14 @@ test("mobile navigation closes with Escape and restores focus", async ({
   await page.goto("/");
   await page.getByRole("button", { name: "打开导航" }).click();
   await expect(
-    page.getByRole("navigation", { name: "产品导航" }),
+    page.getByRole("navigation", { name: "主导航" }),
   ).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("button", { name: "打开导航" })).toBeFocused();
   await page.getByRole("button", { name: "打开导航" }).click();
-  await page.locator('#craft-navigation a[href="/#design"]').click();
-  await expect(page).toHaveURL(/#design$/);
+  await page.locator('.nav-products > button').click();
+  await page.locator('#nav-products-panel a[href="/products/design/"]').click();
+  await expect(page).toHaveURL(/\/products\/design\/$/);
   await expect(page.getByRole("button", { name: "打开导航" })).toHaveAttribute(
     "aria-expanded",
     "false",
@@ -249,4 +250,33 @@ test("reducing motion at runtime returns the document to native scrolling", asyn
   await expect(page.locator('html')).toHaveAttribute('data-scroll-engine', 'lenis');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect(page.locator('html')).toHaveAttribute('data-scroll-engine', 'native');
+});
+
+// Navigation and ruler revision: progress numbers are allowed, chapter numbering is not.
+test('main navigation has accessible product and resource disclosures', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('.nav-products > button').click();
+  await expect(page.locator('#nav-products-panel')).toBeVisible();
+  await expect(page.locator('#nav-products-panel a[href^="/products/"]')).toHaveCount(3);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.nav-products > button')).toBeFocused();
+  await page.locator('.nav-resources > button').focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(page.locator('#nav-resources-panel a').first()).toBeFocused();
+  await page.keyboard.press('Escape');
+  await page.getByRole('link', { name: '价格', exact: true }).first().click();
+  await expect(page.locator('h2#pricing-status')).toHaveText('价格信息待补充');
+});
+
+test('reading ruler shows digits and supports keyboard range navigation', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  const ruler=page.getByRole('scrollbar', { name:'页面阅读进度' });
+  await expect(page.locator('.ruler-tick')).toHaveCount(101);
+  await ruler.focus();
+  await page.keyboard.press('End');
+  await expect(ruler).toHaveAttribute('aria-valuenow','100');
+  await expect(page.locator('.ruler-readout')).toHaveAttribute('data-value','100%');
+  await page.keyboard.press('Home');
+  await expect(ruler).toHaveAttribute('aria-valuenow','0');
 });

@@ -1,7 +1,7 @@
 import { CraftHeader, CraftFooter, CraftRail } from "./components/CraftShell";
 import { ArrowUpRight } from "lucide-react";
 import { SiteMotion } from "./components/SiteMotion";
-import { Footer, Header } from "./components/Layout";
+import { ResourcesPage, PricingPage } from "./pages/Resources";
 import { Home } from "./pages/Home";
 import { ProductPage } from "./pages/Product";
 import { ArticlePage, JournalPage } from "./pages/Journal";
@@ -18,6 +18,8 @@ export function App({ path }: { path: string }) {
   else if (post) page = <ArticlePage post={post} />;
   else if (clean === "/blog") page = <JournalPage />;
   else if (clean === "/open-source") page = <EcosystemPage />;
+  else if (clean === "/resources") page = <ResourcesPage />;
+  else if (clean === "/pricing") page = <PricingPage />;
   else
     page = (
       <section className="container not-found">
@@ -31,14 +33,14 @@ export function App({ path }: { path: string }) {
     );
   const isProductSite = clean === "/" || Boolean(product);
   return (
-    <div className={isProductSite ? "craft-site" : "legacy-site"}>
+    <div className="craft-site">
       <a className="skip-link" href="#main-content">
         跳到主要内容
       </a>
       <div id="top" />
-      {isProductSite ? <CraftHeader path={clean} /> : <Header path={clean} />}
-      <div className={isProductSite ? "craft-frame" : undefined}><main id="main-content">{page}</main>
-      {isProductSite ? <CraftFooter /> : <Footer />}</div>
+      <CraftHeader path={clean} />
+      <div className={isProductSite ? "craft-frame" : "craft-frame craft-frame-without-rail"}><main id="main-content" className={!isProductSite ? "craft-editorial-content" : undefined}>{page}</main>
+      <CraftFooter /></div>
       {isProductSite && <CraftRail home={clean === "/"} />}
       <SiteMotion path={clean} />
     </div>

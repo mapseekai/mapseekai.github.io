@@ -7,7 +7,7 @@ import { routes, projects, posts, metadata, normalizePath } from '../.ssr/entry-
 const dist = resolve('dist');
 test('all published routes are unique and statically rendered', async () => {
   assert.equal(routes.length, new Set(routes).size);
-  assert.equal(routes.length, 12);
+  assert.equal(routes.length, 14);
   for (const path of routes) {
     const html = await readFile(resolve(dist, `.${path}`, 'index.html'), 'utf8');
     assert.match(html, /data-prerendered="true"/);

@@ -2,7 +2,7 @@
 
 [在线官网](https://mapseekai.github.io/) · [设计规范](design.md) · [截图替换](docs/product-screenshots.md) · [验证记录](docs/photocraft-validation.md)
 
-MapseekAI 的产品官网，以 Cloud、Loom、Design 三款独立产品为核心。本版参考用户指定的 PhotoCraft 官方产品页，以浅灰纸面、粗字、细线与章节编号组织内容，支持明暗主题和章节导航。
+MapseekAI 的产品官网，以 Cloud、Loom、Design 三款独立产品为核心。本版参考用户指定的 PhotoCraft 官方产品页，以浅灰纸面、粗字、细线与清晰的产品章节组织内容，支持明暗主题和章节导航。
 
 ## 本地开发
 
@@ -21,7 +21,7 @@ pnpm test
 pnpm preview
 ```
 
-构建会检查 TypeScript、编译客户端与服务端渲染入口，然后生成 12 个静态页面和独立 404 页。预览服务也默认使用 5188 端口；开发与预览不要同时占用该端口。通过 `PORT=5190 pnpm preview` 可以使用另一个端口。
+构建会检查 TypeScript、编译客户端与服务端渲染入口，然后生成 14 个静态页面和独立 404 页。预览服务也默认使用 5188 端口；开发与预览不要同时占用该端口。通过 `PORT=5190 pnpm preview` 可以使用另一个端口。
 
 ## 页面和交互
 
@@ -43,7 +43,10 @@ pnpm preview
 
 - `src/pages/Home.tsx`：三产品首页。
 - `src/pages/Product.tsx`：产品详情。
-- `src/components/CraftShell.tsx`：产品导航、主题切换、章节读数和页脚。
+- `src/components/CraftShell.tsx`：滚动联动、章节标题和数字阅读标尺。
+- `src/components/SiteNavigation.tsx`：共用顶栏、产品/资源下拉与目录式页脚。
+- `src/content/navigation.ts`：导航与页脚的有效入口。
+- `src/pages/Resources.tsx`：资源中心与价格信息页。
 - `src/components/ProductScreenshot.tsx`：截图占位、实际图片与原图查看。
 - `src/content/product-media.ts`：三个共享截图配置。
 - `src/components/ProductExperiences.tsx`：三个交互示例与矢量地图。
@@ -87,3 +90,9 @@ VITE_DESIGN_URL=https://your-design.example
 ## PhotoCraft 滚动联动
 
 官网新增固定章节标题、右侧滚动驱动的文字过渡和 Lenis 惯性滚动。截图和原图查看器按屏幕可视高度约束，保持完整比例。实现说明见 [滚动联动](docs/photocraft-scroll-fidelity.md)，验证边界见 [验证记录](docs/scroll-fidelity-validation.md)。
+
+## 导航与阅读标尺
+
+顶部共用“产品、资源、价格、博客”导航，产品与资源支持下拉、键盘操作、Esc 与外侧关闭。页脚按品牌、产品、Mapseek、资源、社区分栏。所有页面共享导航与主题；新增 `/resources/` 和 `/pricing/`，价格页目前明确保留为待补充信息，不发布虚构金额。
+
+右侧标尺按 0–100 显示阅读刻度，每 5% 标注，当前位置显示滚动百分比。绿色指示线带轻微光晕，支持点击、拖动和键盘定位；正文、产品名与功能区仍无序号。详见 [此次细节验证](docs/navigation-polish-validation.md)。

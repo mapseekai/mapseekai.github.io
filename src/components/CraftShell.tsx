@@ -1,46 +1,8 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import Lenis from 'lenis';
-import { ArrowDown, ArrowUpRight, Menu, Moon, Sun, X } from 'lucide-react';
-import { Brand } from './Brand';
+import { ArrowDown } from 'lucide-react';
 
-const navigation = [['cloud', 'Cloud'], ['loom', 'Loom'], ['design', 'Design']] as const;
-
-export function CraftHeader({ path }: { path: string }) {
-  const [open, setOpen] = useState(false);
-  const [dark, setDark] = useState(false);
-  const header = useRef<HTMLElement>(null);
-  const trigger = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
-    setDark(document.documentElement.dataset.craftTheme === 'dark');
-    const escape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && open) { setOpen(false); trigger.current?.focus(); }
-    };
-    const outside = (event: PointerEvent) => {
-      if (open && !header.current?.contains(event.target as Node)) setOpen(false);
-    };
-    document.addEventListener('keydown', escape);
-    document.addEventListener('pointerdown', outside);
-    return () => { document.removeEventListener('keydown', escape); document.removeEventListener('pointerdown', outside); };
-  }, [open]);
-  function toggleTheme() {
-    const next = !dark;
-    setDark(next);
-    document.documentElement.dataset.craftTheme = next ? 'dark' : 'light';
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', next ? '#141715' : '#f2f1ee');
-    try { localStorage.setItem('mapseek-theme', next ? 'dark' : 'light'); } catch { /* Current-tab switching still works when storage is disabled. */ }
-  }
-  return <header className="craft-header" ref={header}>
-    <div className="craft-brand"><Brand /></div>
-    <nav id="craft-navigation" aria-label="产品导航" className={open ? 'is-open' : ''}>
-      {navigation.map(([id, name]) => <a key={id} href={`/#${id}`} aria-current={path === `/products/${id}` ? 'page' : undefined} onClick={() => setOpen(false)}>{name}<ArrowUpRight size={14} aria-hidden="true" /></a>)}
-    </nav>
-    <div className="craft-header-actions">
-      <button className="craft-theme-toggle" type="button" onClick={toggleTheme} aria-label={dark ? '切换为浅色模式' : '切换为深色模式'} aria-pressed={dark}>{dark ? <Sun size={18} /> : <Moon size={18} />}</button>
-      <a className="craft-header-cta" href="/#products">探索产品<ArrowDown size={14} aria-hidden="true" /></a>
-      <button className="craft-menu" type="button" ref={trigger} onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-controls="craft-navigation" aria-label={open ? '关闭导航' : '打开导航'}>{open ? <X size={21} /> : <Menu size={21} />}</button>
-    </div>
-  </header>;
-}
+export { CraftHeader, CraftFooter } from './SiteNavigation';
 
 type Chapter = { id: string; label: string; name: string };
 const homeChapters: Chapter[] = [
@@ -69,6 +31,10 @@ export function CraftRail({ home }: { home: boolean }) {
   const ruler = useRef<HTMLDivElement>(null);
   const needle = useRef<HTMLSpanElement>(null);
   const line = useRef<HTMLSpanElement>(null);
+  const tickTrack = useRef<HTMLDivElement>(null);
+  const ticks = useRef<(HTMLSpanElement | null)[]>([]);
+  const digits = useRef<(HTMLSpanElement | null)[]>([]);
+  const readout = useRef<HTMLSpanElement>(null);
   const sectionProgress = useRef<HTMLSpanElement>(null);
   const lastDirection = useRef(1);
 
@@ -86,6 +52,7 @@ export function CraftRail({ home }: { home: boolean }) {
     let glyphWidths: number[][] = [];
     let labelWidths: number[] = [];
     let activeIndex = 0, activeContext = '';
+    let lastPercentage = -1;
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
 
@@ -108,6 +75,8 @@ export function CraftRail({ home }: { home: boolean }) {
       if (context) context.font = `650 32px ${styles.getPropertyValue('--craft-display')}`;
       glyphWidths = chapters.map(chapter => Array.from(chapter.label).map(letter => context?.measureText(letter).width || 20));
       labelWidths = glyphWidths.map(values => values.reduce((sum, value) => sum + value, 0));
+      const rulerHeight = Math.max(1, height - headerHeight - stripHeight - 64);
+      ticks.current.forEach((tick, index) => { if (tick) tick.style.top = `${index / 100 * (documentHeight + rulerHeight)}px`; });
       dirty = true;
     };
     const update = () => {
@@ -128,7 +97,16 @@ export function CraftRail({ home }: { home: boolean }) {
       const progress = clamp(y / documentHeight);
       ruler.current?.setAttribute('aria-valuenow', String(Math.round(progress * 100)));
       ruler.current?.setAttribute('aria-valuetext', `${chapters[nextIndex].name}，页面已阅读 ${Math.round(progress * 100)}%`);
-      if (ruler.current) ruler.current.style.backgroundPositionY = `${-(y * .16) % 40}px`;
+      if (tickTrack.current) tickTrack.current.style.transform = `translate3d(0,${-y}px,0)`;
+      const rulerHeight = Math.max(1, height - headerHeight - stripHeight - 64);
+      ticks.current.forEach((tick, index) => { if (tick && index % 5 === 0) tick.dataset.near = String(Math.abs(index / 100 * (documentHeight + rulerHeight) - y - progress * rulerHeight) < 14); });
+      const percentage = Math.round(progress * 100);
+      if (percentage !== lastPercentage) {
+        lastPercentage = percentage;
+        const values = String(percentage).padStart(3, '0');
+        digits.current.forEach((digit, index) => { if (digit) digit.style.transform = `translateY(${-Number(values[index])}em)`; });
+        if (readout.current) readout.current.dataset.value = `${percentage}%`;
+      }
       if (line.current) line.current.style.transform = `scaleY(${progress})`;
       if (needle.current) needle.current.style.transform = `translateY(${progress * Math.max(0, height - chrome - 64)}px)`;
       const start = positions[nextIndex];
@@ -143,7 +121,7 @@ export function CraftRail({ home }: { home: boolean }) {
       const next = Math.min(chapters.length - 1, settled + 1);
       const distance = Math.max(160, height * .68 - trigger);
       const travel = next > settled ? ease(clamp((y - (positions[next] - height * .68)) / distance)) : 0;
-      const right = width - Math.max(28, gutter * .25);
+      const right = width - Math.max(64, gutter * .45);
       const top = chrome + 18;
       chapters.forEach((chapter, index) => {
         const isIncoming = index === next && next !== settled;
@@ -187,6 +165,7 @@ export function CraftRail({ home }: { home: boolean }) {
           }
           letter.style.transform = `translate3d(${x.toFixed(2)}px,${letterY.toFixed(2)}px,0) rotate(${rotation.toFixed(2)}deg) scale(${scale.toFixed(4)})`;
           letter.style.color = isHighlighted ? 'var(--craft-ink)' : 'var(--craft-orbit-muted)';
+          letter.dataset.active = String(isHighlighted);
           offset += glyphWidths[index][characterIndex];
         });
       });
@@ -236,6 +215,35 @@ export function CraftRail({ home }: { home: boolean }) {
       if (lenis) lenis.scrollTo(top, { duration: 1.05, easing: t => 1 - Math.pow(1 - t, 4), onComplete: focus });
       else { window.scrollTo({ top, behavior: 'instant' }); focus(); }
     };
+    const seek = (fraction: number, immediate = false) => {
+      const top = clamp(fraction) * documentHeight;
+      if (lenis) lenis.scrollTo(top, { immediate, duration: .7, easing: t => 1 - Math.pow(1 - t, 4) });
+      else window.scrollTo({ top, behavior: 'instant' });
+    };
+    let pointer: number | null = null;
+    const rulerDown = (event: PointerEvent) => {
+      if (event.button !== 0 || !ruler.current) return;
+      event.preventDefault(); pointer = event.pointerId; ruler.current.focus({ preventScroll: true });
+      ruler.current.setPointerCapture(pointer);
+      const bounds = ruler.current.getBoundingClientRect();
+      seek((event.clientY - bounds.top) / bounds.height);
+    };
+    const rulerMove = (event: PointerEvent) => {
+      if (event.pointerId !== pointer || !ruler.current) return;
+      const bounds = ruler.current.getBoundingClientRect(); seek((event.clientY - bounds.top) / bounds.height, true);
+    };
+    const rulerUp = () => { pointer = null; };
+    const rulerKey = (event: KeyboardEvent) => {
+      const keys: Record<string, number> = { ArrowDown: .01, ArrowUp: -.01, PageDown: .1, PageUp: -.1 };
+      if (event.key === 'Home' || event.key === 'End') { event.preventDefault(); seek(event.key === 'Home' ? 0 : 1); }
+      else if (event.key in keys) { event.preventDefault(); seek(scrollY / documentHeight + keys[event.key]); }
+    };
+    const rulerElement = ruler.current;
+    rulerElement?.addEventListener('pointerdown', rulerDown);
+    rulerElement?.addEventListener('pointermove', rulerMove);
+    rulerElement?.addEventListener('pointerup', rulerUp);
+    rulerElement?.addEventListener('pointercancel', rulerUp);
+    rulerElement?.addEventListener('keydown', rulerKey);
     const resize = () => { measure(); lenis?.resize(); request(); };
     const observer = new ResizeObserver(resize);
     observer.observe(document.querySelector('.craft-frame')!);
@@ -251,6 +259,8 @@ export function CraftRail({ home }: { home: boolean }) {
       window.removeEventListener('scroll', request); window.removeEventListener('resize', resize);
       document.removeEventListener('click', click); document.removeEventListener('visibilitychange', visibility);
       reduce.removeEventListener('change', configure);
+      rulerElement?.removeEventListener('pointerdown', rulerDown); rulerElement?.removeEventListener('pointermove', rulerMove);
+      rulerElement?.removeEventListener('pointerup', rulerUp); rulerElement?.removeEventListener('pointercancel', rulerUp); rulerElement?.removeEventListener('keydown', rulerKey);
       delete root.dataset.scrollEngine;
     };
   }, [home]);
@@ -273,16 +283,11 @@ export function CraftRail({ home }: { home: boolean }) {
           {Array.from(entry.label).map((letter, i) => <span aria-hidden="true" className="orbit-letter" ref={element => { (letters.current[index] ??= [])[i] = element; }} key={i}>{letter}</span>)}
         </Fragment>)}
       </nav>
-      <div ref={ruler} className="craft-scroll-ruler" role="progressbar" aria-label="页面阅读进度" aria-valuemin={0} aria-valuemax={100} aria-valuenow={0}>
-        <span className="ruler-fill" ref={line} /><span className="ruler-needle" ref={needle} />
+      <div ref={ruler} className="craft-scroll-ruler" role="scrollbar" aria-label="页面阅读进度" aria-controls="main-content" aria-orientation="vertical" tabIndex={0} aria-valuemin={0} aria-valuemax={100} aria-valuenow={0}>
+        <div className="ruler-tick-viewport" aria-hidden="true"><div className="ruler-tick-track" ref={tickTrack}>{Array.from({ length: 101 }, (_, index) => <span key={index} ref={element => { ticks.current[index] = element; }} className={index % 5 === 0 ? 'ruler-tick major' : 'ruler-tick'} style={{ top: `${index}%` }}><i />{index % 5 === 0 && <b>{index}</b>}</span>)}</div></div>
+        <span className="ruler-fill" ref={line} />
+        <span className="ruler-needle" ref={needle}><i className="ruler-signal" /><span className="ruler-readout" ref={readout} data-value="0%" aria-hidden="true">{[0, 1, 2].map(column => <span className="ruler-digit-window" key={column}><span className="ruler-digit-strip" ref={element => { digits.current[column] = element; }}>{Array.from({ length: 10 }, (_, number) => <span key={number}>{number}</span>)}</span></span>)}<small>%</small></span></span>
       </div>
     </aside>
   </>;
-}
-
-export function CraftFooter() {
-  return <footer className="craft-footer">
-    <div className="craft-footer-top"><Brand /><p>空间数据。空间编辑。地图设计。</p><a href="#top">回到顶部<ArrowUpRight size={16} aria-hidden="true" /></a></div>
-    <div className="craft-footer-bottom"><span>© 2026 MapseekAI</span><span>Designed for spatial work.</span><div>{navigation.map(([id, name]) => <a key={id} href={`/products/${id}/`}>{name}</a>)}</div></div>
-  </footer>;
 }

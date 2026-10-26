@@ -141,7 +141,7 @@ export function normalizePath(path: string): string {
 
 export const routes = [
   '/', ...products.map((product) => `/products/${product.id}/`),
-  '/open-source/', '/blog/', ...posts.map((post) => `/blog/${post.slug}/`),
+  '/open-source/', '/blog/', '/resources/', '/pricing/', ...posts.map((post) => `/blog/${post.slug}/`),
 ];
 
 export function metadata(path: string) {
@@ -150,6 +150,8 @@ export function metadata(path: string) {
   const post = posts.find((item) => clean === `/blog/${item.slug}`);
   if (product) return { title: `${product.name} · ${product.label} — MapseekAI`, description: product.description };
   if (post) return { title: `${post.title} — MapseekAI 博客`, description: post.summary };
+  if (clean === '/resources') return { title: '资源中心 — MapseekAI', description: 'Mapseek 的产品笔记、地图设计与工程实践，以及开放项目入口。' };
+  if (clean === '/pricing') return { title: '价格 — MapseekAI', description: '了解 Mapseek 三款产品；价格信息待补充。' };
   if (clean === '/blog') return { title: '博客 · 产品、设计与工程 — MapseekAI', description: '来自 MapseekAI 的产品笔记、设计思考与工程手记。' };
   if (clean === '/open-source') return { title: '开放的技术生态 — MapseekAI', description: '探索 emap、async-geotiff-rust、tasklane 与 MapseekAI 的开源工具和技术笔记。' };
   if (clean !== '/') return { title: '页面未找到 — MapseekAI', description: '返回 MapseekAI，继续探索空间数据的更多可能。' };
