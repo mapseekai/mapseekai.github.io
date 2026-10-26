@@ -1,48 +1,81 @@
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { readFile, stat } from "node:fs/promises";
 
-const read = (file) => readFile(new URL(`../${file}`, import.meta.url), 'utf8');
+const read = (file) => readFile(new URL(`../${file}`, import.meta.url), "utf8");
 
-test('homepage contains the accessible local geographic fallback and labelled controls', async () => {
-  const html = await read('dist/index.html');
-  assert.match(html, /src="\/assets\/land-field\.svg"/);
-  assert.match(html, /width="900" height="525"/);
-  assert.match(html, /aria-label="暂停地图动效"/);
-  assert.match(html, /aria-label="地理数据图形控制"/);
-  assert.ok(!/<dialog[^>]*\sopen(?:\s|>)/.test(html));
+test("product edition renders exactly the three products without the retired marketing modules", async () => {
+  const html = await read("dist/index.html");
+  for (const id of ["cloud", "loom", "design"]) {
+    assert.ok(html.includes(`id="${id}"`));
+    assert.ok(html.includes(`/products/${id}/`));
+  }
+  assert.equal((html.match(/class="product-chapter /g) || []).length, 3);
+  assert.ok(!html.includes('class="spatial-field"'));
+  assert.ok(!html.includes('class="workflow-section"'));
+  assert.ok(!html.includes('class="journal-section"'));
+  assert.ok(!html.includes('class="ecosystem-section"'));
+  assert.match(html, /功能交互示意/);
+  assert.match(html, /NASA Earth Observatory \/ USGS/);
 });
 
-test('local geographic geometry and its SVG fallback use the same coordinate domain', async () => {
-  const data = JSON.parse(await read('public/data/land-path.json'));
-  const svg = await read('public/assets/land-field.svg');
-  assert.equal(data.width, 900);
-  assert.equal(data.height, 525);
-  assert.ok(data.path.startsWith('M') && data.path.endsWith('Z'));
-  assert.match(data.source, /Natural Earth/);
-  assert.match(svg, /viewBox="0 0 900 525"/);
-  assert.ok(svg.includes(data.path));
-  assert.ok(!/<script|<foreignObject|https?:\/\/(?!www\.w3\.org)/i.test(svg));
+test("hero images are local, bounded, responsive assets with accessible fallback markup", async () => {
+  const html = await read("dist/index.html");
+  assert.match(html, /fetchPriority="high"/i);
+  assert.match(html, /alpine-lakes-small\.webp/);
+  assert.match(html, /南阿尔卑斯山脉与冰川湖泊的卫星影像/);
+  for (const filename of ["alpine-lakes.webp", "alpine-lakes-small.webp"]) {
+    const path = new URL(
+      `../public/assets/atelier/${filename}`,
+      import.meta.url,
+    );
+    const data = await readFile(path);
+    assert.equal(data.subarray(0, 4).toString(), "RIFF");
+    assert.equal(data.subarray(8, 12).toString(), "WEBP");
+    assert.ok((await stat(path)).size < 1000000);
+  }
 });
 
-test('homepage preserves both tab systems and distinct accessible names', async () => {
-  const html = await read('dist/index.html');
-  for (const name of ['产品演示', '空间工作环节', '搜索页面']) assert.ok(html.includes(name));
-  assert.equal((html.match(/role="tablist"/g) || []).length, 2);
-  assert.equal((html.match(/role="tab"/g) || []).length, 6);
-  assert.match(html, /交互概念演示/);
-  for (const product of ['cloud', 'loom', 'design']) assert.ok(html.includes(`/products/${product}/`));
+test("initial SSR contains all controls, six keyboard-editable nodes, and an accessible style picker", async () => {
+  const html = await read("dist/index.html");
+  for (const name of [
+    "隐藏高山湖泊影像",
+    "隐藏研究范围",
+    "隐藏观测位置",
+    "重置几何",
+    "撤销节点修改",
+  ])
+    assert.ok(html.includes(`aria-label="${name}"`));
+  assert.equal((html.match(/aria-label="编辑节点 \d"/g) || []).length, 6);
+  assert.match(html, /class="mood-option forest"/);
+  assert.match(html, /class="mood-option paper"/);
+  assert.match(html, /class="mood-option night"/);
+  assert.match(html, /导出示例 SVG/);
 });
 
-test('motion ships with reduction and cleanup provisions instead of hidden page content', async () => {
-  const css = await read('src/styles.css');
-  const field = await read('src/components/SpatialField.tsx');
-  const motion = await read('src/components/SiteMotion.tsx');
-  assert.match(css, /prefers-reduced-motion: reduce/);
-  assert.match(field, /cancelAnimationFrame/);
-  assert.match(field, /visibilitychange/);
-  assert.match(field, /IntersectionObserver/);
-  assert.match(field, /1000 \/ 24/);
+test("product routes use the same functional experiences and retain honest demo disclosures", async () => {
+  for (const id of ["cloud", "loom", "design"]) {
+    const html = await read(`dist/products/${id}/index.html`);
+    assert.ok(html.includes(`class="experience ${id}-experience"`));
+    assert.ok(html.includes(`mapseek-${id}`));
+    assert.match(html, /未连接产品服务/);
+    assert.ok(!html.includes('class="workspace'));
+  }
+});
+
+test("motion has a reduced-motion fallback, cleanup, and visible SSR content", async () => {
+  const css = await read("src/atelier.css");
+  const motion = await read("src/components/SiteMotion.tsx");
+  assert.match(css, /prefers-reduced-motion:\s*reduce/);
   assert.match(motion, /animation\.cancel/);
+  assert.match(motion, /observer\.disconnect/);
   assert.ok(!/\[data-reveal\][^{]*\{[^}]*opacity:\s*0/.test(css));
+  assert.ok(!/transition:\s*all/.test(css));
+});
+
+test("SVG export resolves palette tokens and releases its object URL", async () => {
+  const source = await read("src/components/ProductExperiences.tsx");
+  assert.match(source, /XMLSerializer/);
+  assert.match(source, /revokeObjectURL/);
+  assert.match(source, /image\/svg\+xml/);
 });

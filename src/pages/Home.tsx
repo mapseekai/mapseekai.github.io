@@ -1,56 +1,270 @@
-import { Github } from '../components/Brand';
-import { products, projects, posts, githubOrg, type Post } from '../content/site';
-import { MapPreview } from '../components/MapPreview';
-import { EditorialArt } from '../components/Art';
-import { Endcap, ExternalLink, SectionHeading } from '../components/Layout';
-import { SpatialField } from '../components/SpatialField';
-import { Workflow } from '../components/Workflow';
+import {
+  ArrowDown,
+  ArrowUpRight,
+  Database,
+  Layers,
+  PenTool,
+} from "lucide-react";
+import type { Post } from "../content/site";
+import { EditorialArt } from "../components/Art";
+import {
+  CloudExperience,
+  DesignExperience,
+  LoomExperience,
+} from "../components/ProductExperiences";
 
 export function PostCard({ post }: { post: Post }) {
-  return <article className="post-card"><a href={`/blog/${post.slug}/`}>
-    <EditorialArt type={post.visual} />
-    <div className="post-copy"><h3>{post.title}</h3><p>{post.summary}</p><div className="post-meta"><span>{post.category}</span><span>{post.readTime}阅读</span></div></div>
-  </a></article>;
+  return (
+    <article className="post-card">
+      <a href={`/blog/${post.slug}/`}>
+        <EditorialArt type={post.visual} />
+        <div className="post-copy">
+          <h3>{post.title}</h3>
+          <p>{post.summary}</p>
+          <div className="post-meta">
+            <span>{post.category}</span>
+            <span>{post.readTime}阅读</span>
+          </div>
+        </div>
+      </a>
+    </article>
+  );
 }
 
 export function Home() {
-  return <>
-    <section className="hero cobalt-hero">
-      <div className="container hero-layout">
-        <div className="hero-copy">
-          <h1>让空间数据，<br />成为创造的起点。</h1>
-          <p className="hero-description">管理数据、编辑空间、设计地图。<br />为认真做地图的人，打造专注的工具。</p>
-          <div className="hero-actions"><a className="button" href="#products">探索产品</a><a className="button button-outline" href="#workspace">看看它们如何工作</a></div>
+  return (
+    <div className="atelier-home">
+      <section className="atelier-hero">
+        <picture className="hero-earth">
+          <source
+            media="(max-width: 640px)"
+            srcSet="/assets/atelier/alpine-lakes-small.webp"
+          />
+          <img
+            src="/assets/atelier/alpine-lakes.webp"
+            alt="南阿尔卑斯山脉与冰川湖泊的卫星影像"
+            width="2200"
+            height="1600"
+            fetchPriority="high"
+          />
+        </picture>
+        <div className="hero-shade" />
+        <div className="atelier-container hero-content">
+          <div className="hero-heading">
+            <span className="hero-overline">空间，有更多可能。</span>
+            <h1>
+              让空间数据，
+              <br />
+              成为创造的起点。
+            </h1>
+            <p>
+              管理数据，编辑空间，设计地图。
+              <br />
+              三个专注的工具，让想法抵达真实的世界。
+            </p>
+            <a className="atelier-button light" href="#products">
+              探索 Mapseek
+              <ArrowUpRight size={18} />
+            </a>
+          </div>
+
+          <div className="hero-product-rail">
+            <a href="#cloud">
+              <Database size={19} />
+              <span>
+                Cloud<small>数据的统一空间</small>
+              </span>
+              <ArrowUpRight size={18} />
+            </a>
+            <a href="#loom">
+              <Layers size={19} />
+              <span>
+                Loom<small>精准的要素编辑</small>
+              </span>
+              <ArrowUpRight size={18} />
+            </a>
+            <a href="#design">
+              <PenTool size={19} />
+              <span>
+                Design<small>自由的地图表达</small>
+              </span>
+              <ArrowUpRight size={18} />
+            </a>
+          </div>
         </div>
-        <SpatialField />
-      </div>
-      <div className="container hero-foot"><p>MapseekAI，让灵感与空间相遇。</p><div className="hero-capabilities"><span>空间数据管理</span><span>精细空间编辑</span><span>AI 地图设计</span></div></div>
-    </section>
+      </section>
 
-    <section className="container section products-section" id="products">
-      <SectionHeading title="选对工具，专注眼前的工作。"><p>从一份数据开始。<br />管理、编辑与设计，不必挤在同一个界面。</p></SectionHeading>
-      <div className="product-index" data-reveal>{products.map((product) => <article key={product.id}>
-        <a href={`/products/${product.id}/`}><h3>{product.name}</h3><p className="product-kind">{product.label}</p><p>{product.description}</p><span className="product-index-link">探索 {product.id[0].toUpperCase() + product.id.slice(1)}</span></a>
-      </article>)}</div>
-      <div className="workbench-heading" id="workspace"><h2>先动手，再了解。</h2><p>切换产品，试试图层、要素与配色。</p></div>
-      <div className="workbench" role="group" aria-label="Mapseek 产品交互演示" data-reveal><MapPreview /></div>
-      <p className="workbench-note">本地交互概念演示，用于说明产品方向，不连接实际产品服务。</p>
-    </section>
+      <section
+        className="atelier-intro atelier-container"
+        id="products"
+        data-reveal
+      >
+        <span id="workflow" className="legacy-anchor" />
+        <div>
+          <span className="section-kicker">Mapseek 产品系列</span>
+          <h2>
+            各自专注，
+            <br />
+            让创造更进一步。
+          </h2>
+        </div>
+        <p>
+          把复杂留给工具，
+          <br />
+          把判断、灵感与表达留给你。
+        </p>
+        <a href="#cloud" className="round-down" aria-label="查看 Cloud 产品">
+          <ArrowDown size={24} />
+        </a>
+      </section>
 
-    <Workflow />
+      <section className="product-chapter chapter-cloud" id="cloud">
+        <div className="atelier-container">
+          <div className="chapter-heading" data-reveal>
+            <div className="product-wordmark">
+              <span className="product-number">01</span>
+              <span>
+                Mapseek <b>Cloud</b>
+              </span>
+            </div>
+            <div className="chapter-copy">
+              <h2>
+                数据有序，
+                <br />
+                工作自有章法。
+              </h2>
+              <div>
+                <p>
+                  从数据集到地图服务，让矢量、影像与空间处理，
+                  <br className="wide-break" />
+                  围绕同一份清晰的数据开展。
+                </p>
+                <a className="chapter-link" href="/products/cloud/">
+                  认识 Cloud
+                  <ArrowUpRight size={18} />
+                </a>
+              </div>
+            </div>
+          </div>
+          <div data-reveal>
+            <CloudExperience />
+          </div>
+          <div className="chapter-details">
+            <span>空间数据平台</span>
+            <p>
+              数据管理
+              <span />
+              空间分析
+              <span />
+              服务发布
+            </p>
+            <a href="/products/cloud/" aria-label="了解 Mapseek Cloud">
+              <ArrowUpRight size={22} />
+            </a>
+          </div>
+        </div>
+      </section>
 
-    <section className="container section ecosystem-section" data-reveal>
-      <div className="ecosystem-intro"><h2>产品之下，<br />是持续打磨的基础。</h2><p>从地图引擎到 Worker 运行时，<br />从栅格样式到地图设计规则。</p><div className="ecosystem-actions"><a className="text-link" href="/open-source/">探索技术生态</a><ExternalLink className="github-link" href={githubOrg}><Github size={20} />GitHub</ExternalLink></div></div>
-      <div className="ecosystem-rows">{projects.map((project) => {
-        const content = <><div className="project-row-title"><strong>{project.name}</strong><span>{project.kind}</span></div><p>{project.description}</p><span className="project-action">{project.action}</span></>;
-        return project.external ? <ExternalLink href={project.href} className="ecosystem-row" key={project.name}>{content}</ExternalLink> : <a href={project.href} className="ecosystem-row" key={project.name}>{content}</a>;
-      })}</div>
-    </section>
+      <section className="product-chapter chapter-loom" id="loom">
+        <div className="atelier-container">
+          <div className="chapter-heading" data-reveal>
+            <div className="product-wordmark">
+              <span className="product-number">02</span>
+              <span>
+                Mapseek <b>Loom</b>
+              </span>
+            </div>
+            <div className="chapter-copy">
+              <h2>细节，在你掌握之中。</h2>
+              <div>
+                <p>
+                  地图就是工作台。围绕图层、几何和属性，
+                  <br className="wide-break" />
+                  在浏览器里，把每一次编辑做准确。
+                </p>
+                <a className="chapter-link" href="/products/loom/">
+                  认识 Loom
+                  <ArrowUpRight size={18} />
+                </a>
+              </div>
+            </div>
+          </div>
+          <div data-reveal>
+            <LoomExperience />
+          </div>
+          <div className="chapter-details">
+            <span>浏览器空间编辑器</span>
+            <p>
+              几何编辑
+              <span />
+              属性管理
+              <span />
+              图层组织
+            </p>
+            <a href="/products/loom/" aria-label="了解 Mapseek Loom">
+              <ArrowUpRight size={22} />
+            </a>
+          </div>
+        </div>
+      </section>
 
-    <section className="journal-section"><div className="container section" data-reveal>
-      <SectionHeading title="把做地图的思考，写下来。"><a className="text-link" href="/blog/">所有文章</a></SectionHeading>
-      <div className="journal-index">{posts.slice(0, 3).map((post) => <article key={post.slug}><a href={`/blog/${post.slug}/`}><h3>{post.title}</h3><p>{post.summary}</p><span>{post.category}<span className="journal-reading">{post.readTime}阅读</span></span></a></article>)}</div>
-    </div></section>
-    <Endcap />
-  </>;
+      <section className="product-chapter chapter-design" id="design">
+        <div className="atelier-container">
+          <div className="chapter-heading" data-reveal>
+            <div className="product-wordmark">
+              <span className="product-number">03</span>
+              <span>
+                Mapseek <b>Design</b>
+              </span>
+            </div>
+            <div className="chapter-copy">
+              <h2>
+                不只是显示，
+                <br />
+                更是你的表达。
+              </h2>
+              <div>
+                <p>
+                  将设计意图、地图样式与 AI 协作放在一起。
+                  <br className="wide-break" />
+                  在每一轮预览与调整中，找到地图自己的语言。
+                </p>
+                <a className="chapter-link" href="/products/design/">
+                  认识 Design
+                  <ArrowUpRight size={18} />
+                </a>
+              </div>
+            </div>
+          </div>
+          <div data-reveal>
+            <DesignExperience />
+          </div>
+          <div className="chapter-details">
+            <span>AI 地图设计工作台</span>
+            <p>
+              AI 辅助设计
+              <span />
+              样式编辑
+              <span />
+              本地优先
+            </p>
+            <a href="/products/design/" aria-label="了解 Mapseek Design">
+              <ArrowUpRight size={22} />
+            </a>
+          </div>
+        </div>
+      </section>
+      <section className="atelier-close atelier-container" data-reveal>
+        <p>
+          从一份数据，
+          <br />
+          到你想创造的世界。
+        </p>
+        <a className="atelier-button" href="#products">
+          找到你的工具
+          <ArrowUpRight size={18} />
+        </a>
+      </section>
+    </div>
+  );
 }

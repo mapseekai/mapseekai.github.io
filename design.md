@@ -1,50 +1,45 @@
-# MapseekAI design system
+# MapseekAI 产品官网
 
-## Reference and direction
+## 设计方向
 
-Hallmark **Cobalt** is the primary reference: https://www.usehallmark.com/themes/cobalt/ .
-This revision replaces the previous dark hero by explicit user request. Use Cobalt's light field, hairlines, opposite-corner cuts and keycap controls; adapt its blue signal to Mapseek green. Do not combine unrelated catalog themes.
+按用户要求取消 Hallmark/Cobalt 的版式限制，采用独立的产品展示设计。
+首页只围绕 Mapseek Cloud、Mapseek Loom、Mapseek Design，不再放置工作流、技术生态、博客模块。
 
-## Brand and typography
+- 首屏：真实高山湖泊卫星影像、深绿遮罩、明确的品牌主张，以及三个产品的直达入口。
+- Cloud：浅色资源目录与遥感影像并置，表现数据组织。
+- Loom：几何编辑画布与属性检查器，表现精确编辑。
+- Design：深绿章节中的地图画板和风格面板，表现制图表达。
+- 不使用虚构客户、性能指标、视频、登录按钮或合作品牌。
+- 三个详情页与首页使用相同的交互组件；已有文章和生态路由继续保留。
 
-- Brand accent: `--color-accent: #166447`; paper: `#f8fbf9`; ink: `#18352b`.
-- Graphite is a deep green `#103e31`, paired with its light ink. Reserve it for the interactive workflow band.
-- Chinese-first local typography: Avenir Next with PingFang SC / Microsoft YaHei fallback. This intentionally replaces Cobalt's Latin-only font recommendation without a third-party font request.
-- Body 16px, secondary text 14px, application labels 12px. Headings share one weight and colour.
-- All palette, spacing, motion and map tokens live in `src/tokens.css`.
+## 视觉体系
 
-## Composition
+- Mapseek 主绿 `#166447`，正文 `#132b22`，近白 `#f7f8f4`，深绿 `#112b23`。
+- 中文优先的本地字体栈，标题中等字重，拉丁产品名保持清晰。
+- 内容宽度上限 1440px；桌面边距 64px，手机 16–22px。
+- 使用大幅产品画布和简洁的上下信息层级，不堆叠营销卡片。
+- 新版样式位于 `src/atelier.css`；不依赖额外动画框架。
 
-- Hero: a concise two-line headline beside an animated character field derived from actual Natural Earth land geometry. No invented metrics or product dashboard.
-- Three products: a ruled text index, followed by **one** working map demonstration with product tabs. Never repeat the same map in three product cards.
-- Workflow: three selectable stages, connected input/output rows, and a route to the selected product. This is a relationship diagram, not a running backend workflow.
-- Ecosystem: the actual project registry. Journal: editorial rows, not a wall of thumbnails.
-- Existing product and article routes share the same type, borders and controls.
-- Container capped at 1440px; desktop gutter 64px, mobile 16px. Every image-bearing column can shrink.
-- Keycaps have a 3px bottom edge. Cut corners progressively enhance with `corner-shape`; regular corners remain the fallback.
+## 实际交互
 
-## Motion
+- Cloud：选择资源、切换影像/范围/位置图层，资源详情跟随当前状态。
+- Loom：节点选择、指针拖拽、键盘移动、最多 20 次撤销与重置。坐标是示例画布的局部坐标，不声称真实地理精度。
+- Design：林野/纸本/夜航三套配色、标注开关、导出自包含的示例 SVG。
+- 所有预览均明确标注“功能交互示意”，不是已发布产品的截图或后端功能证明。
 
-- Three primitives: feedback on controls, an on-entry reveal, and a pausable geographic field.
-- Keycaps travel 1px on hover and depress on press. Navigation underlines use scaleX.
-- Map product/theme changes crossfade with a 5px translation over 240ms.
-- Section entry uses the Web Animations API once, 480ms; the default document is always visible.
-- Workflow connectors draw once on stage selection; never an infinite moving data pipe.
-- Geographic field is capped at 24fps and device pixel ratio 2. Cancel animation frames offscreen, in hidden tabs, when paused, and during cleanup.
-- `prefers-reduced-motion` disables continuous motion, CSS animation and entry effects. A local SVG remains available without JavaScript or on data-fetch failure.
-- No parallax, automatic carousels, cursor followers, artificial counters or mandatory animations before navigation.
+## 动效和访问性
 
-## Interaction and access
+- 首屏影像缓入、区块单次显现、按钮反馈、风格切换过渡。
+- 无持续运行的背景循环；不使用滚动劫持或强制等待。
+- 支持 `prefers-reduced-motion`；无 JavaScript 仍显示正文、产品和地图。
+- 移动导航支持 Esc 和焦点返回，节点支持方向键；菜单和表单使用原生语义。
+- 图片、图形、媒体和字体不依赖运行时第三方请求。
 
-- Quick access uses native `<dialog>`, product/page filtering, Cmd/Ctrl+K, arrow-key navigation and Escape.
-- Both map and workflow tabs implement Left/Right, Home and End, with aria-selected and labelled panels.
-- Preserve original product actions, map layer controls, zoom limits, article search, category filters and 404 behavior.
-- Focus rings appear instantly. Mobile hit targets are at least 44px where the layout permits.
-- Map demonstrations remain identified as local concept demonstrations. Publish no fictional registrations, customer numbers or releases.
+## 实现与来源
 
-## Implementation
-
-- `src/styles.css`: shared shell and homepage.
-- `src/workspace.css`: map workbench; `src/pages.css`: product and editorial routes.
-- `SpatialField.tsx`, `Workflow.tsx`, `CommandMenu.tsx`, `SiteMotion.tsx`: bounded interactions.
-- Data provenance: `docs/asset-sources.md`; validation: `docs/cobalt-validation.md`.
+- `src/pages/Home.tsx`：三个产品的首页叙事。
+- `src/components/LandingShell.tsx`：简洁的产品导航和页脚。
+- `src/components/ProductExperiences.tsx`：三个可操作示例。
+- `src/pages/Product.tsx`：共享体验的产品详情页。
+- `docs/asset-sources.md`：影像来源、处理方式和署名。
+- `docs/product-edition-validation.md`：本次验证结果。

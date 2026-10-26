@@ -19,3 +19,16 @@ Hallmark Cobalt: https://www.usehallmark.com/themes/cobalt/ . The implementation
 ## Existing demonstration
 
 The city map remains the existing procedurally generated, explicitly labelled local concept demonstration. It is not advertised as a screenshot of a deployed Mapseek product.
+
+## Product edition: alpine satellite imagery
+
+- Source article: [How Glaciers Turn Lakes Turquoise](https://science.nasa.gov/earth/earth-observatory/how-glaciers-turn-lakes-turquoise-145055/), NASA Earth Observatory, May 20, 2019.
+- Image: Landsat 8 OLI, May 12, 2019; NASA Earth Observatory image by Lauren Dauphin, using Landsat data from the U.S. Geological Survey.
+- Download: `https://assets.science.nasa.gov/dynamicimage/assets/science/esd/eo/images/imagerecords/145000/145055/newzealand_oli_2019132_lrg.jpg?fit=clip&w=2400`.
+- Local derivatives: `public/assets/atelier/alpine-lakes.webp` (2200×1600) and `alpine-lakes-small.webp` (960×720). The source was cropped to exclude the black no-data edge, resized and WebP-encoded. The hero adds a CSS contrast scrim; the Cloud preview overlays explicitly fictitious research boundaries and observation points.
+- Attribution appears in the product footer. NASA/USGS imagery is shown as an example of spatial information, not as a customer, partnership, or endorsement.
+- Usage reference: [NASA Images and Media Usage Guidelines](https://www.nasa.gov/nasa-brand-center/images-and-media/).
+
+## Vector district
+
+The Riverside district is a deterministic, synthetic illustration authored for this website. It is not a map of a real surveyed location. Nodes use local SVG coordinates, not projected metres or latitude/longitude. The exported SVG contains the selected sample geometry and palette only; it contains no private product data.
