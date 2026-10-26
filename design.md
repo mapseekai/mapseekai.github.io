@@ -44,3 +44,11 @@
 
 `src/craft.css` 管理本版视觉；`CraftShell.tsx` 管理导航与侧栏；`Brand.tsx` 引用正式资产；`ProductScreenshot.tsx` 管理真实截图与占位。
 原有文章和生态地址保留；产品事实仍以 `src/content/site.ts` 为准。
+
+## 滚动交互细化（2026-10-26）
+
+以实际 PhotoCraft 页面行为为参考，固定主导航降至 48px；增加主导航下方的当前章节标题。右侧文字使用滚动驱动的逐字弧线过渡、已读缩小堆叠及当前章节强调，不显示序号。
+
+采用 Lenis 1.3.23、`lerp: 0.12`，原生触控与减少动态效果不使用惯性。截图与查看器均按可视高度约束，完整适应而不裁切；版心最大 1280px、桌面两侧留白约 8.33%。
+
+本轮布局/动效规则集中在 `src/craft-motion.css`，阅读联动在 `CraftShell.tsx`，入场调度在 `SiteMotion.tsx`。详细说明见 `docs/photocraft-scroll-fidelity.md`。

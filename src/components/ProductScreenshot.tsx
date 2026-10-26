@@ -18,7 +18,7 @@ export function ProductScreenshot({ product }: { product: ProductId }) {
   const id = useId();
   const available = Boolean(media.src) && !failed;
   const close = () => { dialog.current?.close(); opener.current?.focus(); };
-  return <figure className={`craft-screenshot media-${product}`} data-screenshot={product} data-media-state={available ? 'ready' : failed ? 'error' : 'reserved'}>
+  return <figure className={`craft-screenshot media-${product}`} data-scroll-context={`${names[product]} · 产品界面`} data-screenshot={product} data-media-state={available ? 'ready' : failed ? 'error' : 'reserved'}>
     <div className="screenshot-register"><span>Mapseek {names[product]}</span><span>{available ? '实际产品截图' : '截图待补充'}</span></div>
     <div className="screenshot-canvas" style={{ '--media-ratio': `${media.width} / ${media.height}` } as CSSProperties}>
       {available ? <>
@@ -30,7 +30,7 @@ export function ProductScreenshot({ product }: { product: ProductId }) {
       </div>}
     </div>
     <figcaption><span>{media.caption}</span><a href={`/products/${product}/`}>了解 {names[product]}<ArrowUpRight size={14} aria-hidden="true" /></a></figcaption>
-    {available && <dialog className="screenshot-dialog" ref={dialog} aria-labelledby={`${id}-title`} onCancel={(event) => { event.preventDefault(); close(); }} onClick={(event) => { if (event.target === event.currentTarget) close(); }}>
+    {available && <dialog className="screenshot-dialog" data-lenis-prevent ref={dialog} aria-labelledby={`${id}-title`} onCancel={(event) => { event.preventDefault(); close(); }} onClick={(event) => { if (event.target === event.currentTarget) close(); }}>
       <div className="screenshot-dialog-bar"><h2 id={`${id}-title`}>Mapseek {names[product]}</h2><button type="button" onClick={close} aria-label="关闭截图"><X size={22} /></button></div>
       <img src={media.src!} alt={media.alt} width={media.width} height={media.height} />
     </dialog>}

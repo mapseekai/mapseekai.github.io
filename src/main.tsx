@@ -5,6 +5,8 @@ import { metadata } from "./content/site";
 import "./styles.css";
 import "./atelier.css";
 import "./craft.css";
+import "lenis/dist/lenis.css";
+import "./craft-motion.css";
 
 const root = document.getElementById("root");
 if (!root) throw new Error("Missing application root.");

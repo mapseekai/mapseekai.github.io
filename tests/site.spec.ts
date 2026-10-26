@@ -214,3 +214,39 @@ test("theme preference persists and all screenshot slots remain honest", async (
   await page.getByRole("button", { name: "切换为浅色模式" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-craft-theme", "light");
 });
+
+// Scroll-fidelity regression: use actual geometry, not only page scrollWidth.
+test("fixed chapter title follows the current product and screenshot context", async ({ page }) => {
+  await page.goto('/');
+  await expect.poll(() => page.locator('.craft-header').evaluate(el => el.getBoundingClientRect().height)).toBe(48);
+  for (const id of ['cloud', 'loom', 'design']) {
+    await page.evaluate(id => window.scrollTo({ top: document.getElementById(id)!.getBoundingClientRect().top + scrollY - 104, behavior: 'instant' }), id);
+    await expect(page.locator('.craft-site')).toHaveAttribute('data-active-chapter', id);
+    await expect(page.locator(`.orbit-link[href="#${id}"]`)).toHaveAttribute('aria-current', 'location');
+    await expect(page.locator('.section-strip-title')).toContainText(id[0].toUpperCase() + id.slice(1));
+  }
+});
+
+test("whole screenshot figure fits below fixed navigation on short and landscape screens", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const [width,height] of [[1280,720],[1366,768],[375,667],[812,375]]) {
+    await page.setViewportSize({ width,height });
+    await page.goto('/');
+    for (const product of ['cloud','loom','design']) {
+      const figure = page.locator(`[data-screenshot="${product}"]`);
+      await figure.evaluate(el => window.scrollTo({ top: el.getBoundingClientRect().top + scrollY - 104, behavior: 'instant' }));
+      const rect = await figure.boundingBox();
+      expect(rect).not.toBeNull();
+      expect(rect!.y).toBeGreaterThanOrEqual(82);
+      expect(rect!.y + rect!.height).toBeLessThanOrEqual(height + 1);
+    }
+  }
+});
+
+test("reducing motion at runtime returns the document to native scrolling", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveAttribute('data-scroll-engine', 'lenis');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(page.locator('html')).toHaveAttribute('data-scroll-engine', 'native');
+});

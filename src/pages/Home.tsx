@@ -18,7 +18,7 @@ export function Home() {
   return <div className="craft-home">
     <section className="craft-hero" id="overview">
       <div className="craft-register"><span>MAPSEEK</span><span>空间数据 · 空间编辑 · 地图设计</span></div>
-      <div className="craft-hero-core">
+      <div className="craft-hero-core" data-scroll-context="地理空间创作工具">
         <div className="craft-insignia"><BrandMark /></div>
         <p className="craft-suite-label">Mapseek<span>地理空间创作工具</span></p>
         <h1>为地理空间工作，<br /><em>重新设计</em>工具。</h1>
@@ -32,7 +32,7 @@ export function Home() {
       const copy = editorial[product.id];
       return <section className={`product-chapter craft-chapter craft-${product.id}`} id={product.id} key={product.id}>
         <div className="craft-register"><span>MAPSEEK {name.toUpperCase()}</span><span>{product.label}</span></div>
-        <div className="craft-chapter-intro" data-reveal>
+        <div className="craft-chapter-intro" data-reveal data-scroll-context={product.label}>
           <p className="craft-product-name">Mapseek <span>{name}</span></p>
           <h2>{copy.heading}</h2><p className="craft-chapter-description">{copy.text}</p>
           <a className="craft-button craft-button-outline" href={`/products/${product.id}/`}>了解 Mapseek {name}<ArrowUpRight size={16} aria-hidden="true" /></a>
@@ -40,7 +40,7 @@ export function Home() {
         {product.id === 'cloud' && <span id="screens" className="craft-anchor" />}
         <ProductScreenshot product={product.id} />
         <div className="craft-feature-grid"
-            role="group" aria-label={`${name} 产品特点`}>{product.features.map(feature => <article key={feature.title} data-reveal><h3>{feature.title}</h3><p>{feature.text}</p></article>)}</div>
+            role="group" data-scroll-context={`${name} · 产品能力`} aria-label={`${name} 产品特点`}>{product.features.map(feature => <article key={feature.title} data-reveal><h3>{feature.title}</h3><p>{feature.text}</p></article>)}</div>
       </section>;
     })}
     <section className="craft-end" data-reveal><h2>下一张地图，<br /><em>由你开始。</em></h2><p>找到适合你的工作方式。</p><nav aria-label="选择产品">{products.map(product => <a href={`/products/${product.id}/`} key={product.id}>{product.id[0].toUpperCase() + product.id.slice(1)}<ArrowUpRight size={17} aria-hidden="true" /></a>)}</nav></section>

@@ -83,3 +83,7 @@ VITE_DESIGN_URL=https://your-design.example
 ## PhotoCraft 细化版本
 
 本版使用 Mapseek 项目原始图标与完整字标，导航、章节和功能区不再显示序号。首屏、通栏截图及能力网格的设计依据见 [参考分析](docs/photocraft-reference-review.md)。截图位继续保留给真实产品素材。
+
+## PhotoCraft 滚动联动
+
+官网新增固定章节标题、右侧滚动驱动的文字过渡和 Lenis 惯性滚动。截图和原图查看器按屏幕可视高度约束，保持完整比例。实现说明见 [滚动联动](docs/photocraft-scroll-fidelity.md)，验证边界见 [验证记录](docs/scroll-fidelity-validation.md)。
