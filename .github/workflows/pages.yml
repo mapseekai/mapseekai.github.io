@@ -25,7 +25,7 @@ jobs:
     timeout-minutes: 30
     env:
       VITE_SITE_URL: https://mapseekai.github.io
-      EMAP_REF: 1f0dbd90be653a4b91b08b28970f5c4f1307b2d9
+      EMAP_REF: 1fbf6672c0f13f98baa60bfc1bad2243fa8ee006
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
