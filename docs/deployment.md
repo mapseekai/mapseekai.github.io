@@ -10,6 +10,19 @@
 
 运行环境由 `.nvmrc` 与 `package.json` 的 `packageManager` 确定。构建设置 `VITE_SITE_URL=https://mapseekai.github.io`，生成 canonical、Open Graph URL、robots.txt 和 sitemap.xml。Actions 以提交 SHA 固定版本；只有部署 Job 获得 Pages 写入和 OIDC 权限，不需要仓库内的访问令牌。
 
+## emap 文档与示例
+
+同一次 Pages 发布会将 `mapseekai/emap` 的文档、API 和全部示例构建到
+`dist/mapseekai/emap/`，对应公开地址：
+
+- 文档：<https://mapseekai.github.io/mapseekai/emap/>
+- 示例：<https://mapseekai.github.io/mapseekai/emap/examples/>
+
+工作流中的 `EMAP_REF` 固定到经过验证的 emap 提交。更新时先提交、推送并验证
+emap，再更新此值；也可手动运行工作流，在 `emap_ref` 中指定待发布的已验证提交。
+构建安装锁定依赖，执行 emap 的 `build` 和 `docs:verify`，然后把完整静态输出
+合并到官网产物。`/mapseekai/emap/deployment.json` 记录实际发布的源提交，供上线核对。
+
 ## 本地验证
 
 ```bash
