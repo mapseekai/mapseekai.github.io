@@ -6,21 +6,12 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      emap_ref:
-        description: Verified emap commit or ref (empty uses the pinned commit)
-        required: false
-        type: string
-      emap_web_ref:
-        description: Verified emap-web commit or ref (empty uses the pinned commit)
-        required: false
-        type: string
 
 permissions:
   contents: read
 
 concurrency:
-  group: website-${{ github.event_name }}-${{ github.ref }}
+  group: website-${{ github.event_name == 'pull_request' && github.ref || 'production' }}
   cancel-in-progress: false
 
 jobs:
@@ -29,8 +20,6 @@ jobs:
     timeout-minutes: 30
     env:
       VITE_SITE_URL: https://mapseekai.github.io
-      EMAP_REF: 3f3f2eeee5c4c41c3459bdd24f5beffab8b25bca
-      EMAP_WEB_REF: 026194904a86104fa5a46e5b44ffddbf3f5a3001
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -51,18 +40,16 @@ jobs:
         run: pnpm build
       - name: Verify pages and internal links
         run: pnpm test
-      - name: Check out verified emap source
+      - name: Check out latest emap source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: mapseekai/emap
-          ref: ${{ inputs.emap_ref || env.EMAP_REF }}
           path: .emap-source
           persist-credentials: false
-      - name: Check out verified emap-web source
+      - name: Check out latest emap-web source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: mapseekai/emap-web
-          ref: ${{ inputs.emap_web_ref || env.EMAP_WEB_REF }}
           path: .emap-web
           persist-credentials: false
       - name: Install locked emap dependencies
