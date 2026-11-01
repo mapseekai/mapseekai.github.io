@@ -18,10 +18,10 @@
 - 文档：<https://mapseekai.github.io/mapseekai/emap/>
 - 示例：<https://mapseekai.github.io/mapseekai/emap/examples/>
 
-工作流从引擎和文档仓库各自的默认分支检出最新提交。`emap-web` 的 `main` 分支
-推送后，会使用仅安装在官网仓库、仅授予 Actions 写权限的 GitHub App 触发本工作流。
-App ID 保存在文档仓库变量 `EMAP_PAGES_APP_ID`，私钥保存在仓库密钥
-`EMAP_PAGES_APP_PRIVATE_KEY`；令牌仅用于本次任务并在结束后撤销。
+工作流从引擎和文档仓库各自的默认分支检出最新提交。`emap` 的 `master` 或
+`emap-web` 的 `main` 分支推送后，会使用仅安装在官网仓库、仅授予 Actions 写权限的
+GitHub App 触发本工作流。两个仓库分别将 App ID 保存在变量 `EMAP_PAGES_APP_ID`，
+并将各自的私钥保存在密钥 `EMAP_PAGES_APP_PRIVATE_KEY`；令牌仅用于本次任务并在结束后撤销。
 
 文档仓库的 `pnpm verify` 负责构建引擎、API、示例和双语站点并运行检查，然后将
 站点输出合并到官网产物。构建失败不会发布新版本；同一时间只运行一个正式部署。
