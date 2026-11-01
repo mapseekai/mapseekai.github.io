@@ -12,16 +12,17 @@
 
 ## emap 文档与示例
 
-同一次 Pages 发布会将 `mapseekai/emap` 的文档、API 和全部示例构建到
+同一次 Pages 发布会将 `mapseekai/emap-web` 的文档与 `mapseekai/emap` 的 API 和示例构建到
 `dist/mapseekai/emap/`，对应公开地址：
 
 - 文档：<https://mapseekai.github.io/mapseekai/emap/>
 - 示例：<https://mapseekai.github.io/mapseekai/emap/examples/>
 
-工作流中的 `EMAP_REF` 固定到经过验证的 emap 提交。更新时先提交、推送并验证
-emap，再更新此值；也可手动运行工作流，在 `emap_ref` 中指定待发布的已验证提交。
-构建安装锁定依赖，执行 emap 的 `build` 和 `docs:verify`，然后把完整静态输出
-合并到官网产物。`/mapseekai/emap/deployment.json` 记录实际发布的源提交，供上线核对。
+工作流中的 `EMAP_REF` 和 `EMAP_WEB_REF` 分别固定到经过验证的引擎和文档提交。
+更新时先提交、推送并验证相应仓库，再更新这里的固定值；也可手动运行工作流，
+通过 `emap_ref` 和 `emap_web_ref` 指定待发布的已验证提交。文档仓库的 `pnpm verify`
+负责构建引擎、API、示例和双语站点并运行检查，然后将站点输出合并到官网产物。
+`/mapseekai/emap/deployment.json` 记录实际发布的两个源提交，供上线核对。
 
 ## 本地验证
 

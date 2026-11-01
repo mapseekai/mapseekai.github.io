@@ -11,6 +11,10 @@ on:
         description: Verified emap commit or ref (empty uses the pinned commit)
         required: false
         type: string
+      emap_web_ref:
+        description: Verified emap-web commit or ref (empty uses the pinned commit)
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -25,7 +29,8 @@ jobs:
     timeout-minutes: 30
     env:
       VITE_SITE_URL: https://mapseekai.github.io
-      EMAP_REF: 1fbf6672c0f13f98baa60bfc1bad2243fa8ee006
+      EMAP_REF: 3f3f2eeee5c4c41c3459bdd24f5beffab8b25bca
+      EMAP_WEB_REF: 026194904a86104fa5a46e5b44ffddbf3f5a3001
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -53,28 +58,39 @@ jobs:
           ref: ${{ inputs.emap_ref || env.EMAP_REF }}
           path: .emap-source
           persist-credentials: false
+      - name: Check out verified emap-web source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: mapseekai/emap-web
+          ref: ${{ inputs.emap_web_ref || env.EMAP_WEB_REF }}
+          path: .emap-web
+          persist-credentials: false
       - name: Install locked emap dependencies
         working-directory: .emap-source
         run: pnpm install --frozen-lockfile
-      - name: Build emap runtime
-        working-directory: .emap-source
-        run: pnpm run build
+      - name: Install locked emap-web dependencies
+        working-directory: .emap-web
+        run: pnpm install --frozen-lockfile
       - name: Build and verify emap documentation and examples
-        working-directory: .emap-source
-        run: pnpm run docs:verify
+        working-directory: .emap-web
+        env:
+          EMAP_SOURCE_DIR: ${{ github.workspace }}/.emap-source
+        run: pnpm run verify
       - name: Compose emap documentation into the website
         run: |
           node --input-type=module <<'NODE'
           import { cp, readFile, writeFile } from 'node:fs/promises';
           import { execFileSync } from 'node:child_process';
-          const source = '.emap-source/packages/docs/build';
+          const source = '.emap-web/build';
           for (const file of ['index.html', 'en/index.html', 'api/index.html', 'examples/index.html', 'examples/sources/getting-started/lines/manifest.json']) {
             await readFile(`${source}/${file}`);
           }
           const target = 'dist/mapseekai/emap';
           await cp(source, target, { recursive: true });
           const commit = execFileSync('git', ['-C', '.emap-source', 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
-          await writeFile(`${target}/deployment.json`, JSON.stringify({ repository: 'mapseekai/emap', commit }, null, 2) + '\n');
+          const docsCommit = execFileSync('git', ['-C', '.emap-web', 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+          const docs = { repository: 'mapseekai/emap-web', commit: docsCommit };
+          await writeFile(`${target}/deployment.json`, JSON.stringify({ repository: 'mapseekai/emap', commit, docs }, null, 2) + '\n');
           NODE
       - name: Upload GitHub Pages artifact
         if: github.event_name != 'pull_request'
