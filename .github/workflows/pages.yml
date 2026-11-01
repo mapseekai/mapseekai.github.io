@@ -46,6 +46,9 @@ jobs:
           repository: mapseekai/emap
           path: .emap-source
           persist-credentials: false
+      - name: Wait for the checked-out emap commit to pass CI
+        if: github.event_name != 'pull_request'
+        run: node scripts/wait-for-emap-ci.mjs
       - name: Check out latest emap-web source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
