@@ -18,12 +18,36 @@ test('waits for the checked-out commit to pass CI', async () => {
 });
 
 test('rejects failed or cancelled CI and results for a different push', async () => {
-  for (const conclusion of ['failure', 'cancelled']) {
+  for (const conclusion of ['failure', 'cancelled', 'timed_out']) {
     await assert.rejects(waitForEmapCi(commit, async () => response([run('completed', conclusion)])), /concluded/);
   }
   for (const mismatch of [{ head_sha: 'b'.repeat(40) }, { head_branch: 'other' }, { event: 'pull_request' }]) {
     await assert.rejects(waitForEmapCi(commit, async () => response([{ ...run('completed', 'success'), ...mismatch }])), /does not match/);
   }
+});
+
+test('rechecks CI before publishing and rejects a failed rerun', async () => {
+  const results = [response([run('completed', 'success')]), response([run('completed', 'failure')])];
+  const request = async () => results.shift();
+  await waitForEmapCi(commit, request);
+  await assert.rejects(waitForEmapCi(commit, request), /concluded failure/);
+});
+
+test('falls back to the public API when the repository token cannot read eMAP', async () => {
+  const previous = process.env.GITHUB_TOKEN;
+  process.env.GITHUB_TOKEN = 'test-token';
+  const authorizations = [];
+  try {
+    await waitForEmapCi(commit, async (_url, options) => {
+      authorizations.push(options.headers.Authorization);
+      if (authorizations.length === 1) return { ok: false, status: 403 };
+      return response([authorizations.length === 2 ? run('in_progress') : run('completed', 'success')]);
+    }, async () => {});
+  } finally {
+    if (previous === undefined) delete process.env.GITHUB_TOKEN;
+    else process.env.GITHUB_TOKEN = previous;
+  }
+  assert.deepEqual(authorizations, ['Bearer test-token', undefined, undefined]);
 });
 
 test('fails closed when CI is unavailable or does not finish', async () => {

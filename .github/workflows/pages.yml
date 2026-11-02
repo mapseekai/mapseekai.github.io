@@ -18,6 +18,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      emap_commit: ${{ steps.compose.outputs.emap_commit }}
+      docs_commit: ${{ steps.compose.outputs.docs_commit }}
     env:
       VITE_SITE_URL: https://mapseekai.github.io
     steps:
@@ -48,6 +51,8 @@ jobs:
           persist-credentials: false
       - name: Wait for the checked-out emap commit to pass CI
         if: github.event_name != 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/wait-for-emap-ci.mjs
       - name: Check out latest emap-web source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -67,9 +72,10 @@ jobs:
           EMAP_SOURCE_DIR: ${{ github.workspace }}/.emap-source
         run: pnpm run verify
       - name: Compose emap documentation into the website
+        id: compose
         run: |
           node --input-type=module <<'NODE'
-          import { cp, readFile, writeFile } from 'node:fs/promises';
+          import { appendFile, cp, readFile, writeFile } from 'node:fs/promises';
           import { execFileSync } from 'node:child_process';
           const source = '.emap-web/build';
           for (const file of ['index.html', 'en/index.html', 'api/index.html', 'examples/index.html', 'examples/sources/getting-started/lines/manifest.json']) {
@@ -81,6 +87,7 @@ jobs:
           const docsCommit = execFileSync('git', ['-C', '.emap-web', 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
           const docs = { repository: 'mapseekai/emap-web', commit: docsCommit };
           await writeFile(`${target}/deployment.json`, JSON.stringify({ repository: 'mapseekai/emap', commit, docs }, null, 2) + '\n');
+          await appendFile(process.env.GITHUB_OUTPUT, `emap_commit=${commit}\ndocs_commit=${docsCommit}\n`);
           NODE
       - name: Upload GitHub Pages artifact
         if: github.event_name != 'pull_request'
@@ -92,14 +99,30 @@ jobs:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     permissions:
+      contents: read
       pages: write
       id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Check out deployment checks
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Recheck the built emap commit's CI
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          EMAP_COMMIT: ${{ needs.build.outputs.emap_commit }}
+        run: node scripts/wait-for-emap-ci.mjs "$EMAP_COMMIT"
+      - name: Verify built sources are still current
+        env:
+          EMAP_COMMIT: ${{ needs.build.outputs.emap_commit }}
+          DOCS_COMMIT: ${{ needs.build.outputs.docs_commit }}
+          WEBSITE_COMMIT: ${{ github.sha }}
+        run: node scripts/check-deployment-sources.mjs
       - name: Deploy website
         id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

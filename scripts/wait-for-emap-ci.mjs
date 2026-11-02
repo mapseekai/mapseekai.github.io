@@ -6,15 +6,20 @@ import { fileURLToPath } from 'node:url';
 export async function waitForEmapCi(commit, request = fetch, wait = delay) {
   if (!/^[0-9a-f]{40}$/.test(commit)) throw new Error('Invalid eMAP commit');
   const url = `https://api.github.com/repos/mapseekai/emap/actions/workflows/ci.yml/runs?branch=master&event=push&head_sha=${commit}&per_page=1`;
+  let token = process.env.GITHUB_TOKEN;
 
   for (let attempt = 0; attempt <= 10; attempt++) {
-    const response = await request(url, {
-      headers: {
-        Accept: 'application/vnd.github+json',
-        'User-Agent': 'mapseekai-pages-ci-gate',
-        'X-GitHub-Api-Version': '2022-11-28',
-      },
-    });
+    const headers = {
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'mapseekai-pages-ci-gate',
+      'X-GitHub-Api-Version': '2022-11-28',
+    };
+    let response = await request(url, { headers: token ? { ...headers, Authorization: `Bearer ${token}` } : headers });
+    if (token && [401, 403, 404].includes(response.status)) {
+      console.log('Authenticated eMAP CI lookup unavailable; trying the public API');
+      token = undefined;
+      response = await request(url, { headers });
+    }
     if (!response.ok) throw new Error(`Unable to check eMAP CI: HTTP ${response.status}`);
     const { workflow_runs: runs } = await response.json();
     if (!Array.isArray(runs)) throw new Error('Invalid eMAP CI response');
@@ -35,6 +40,6 @@ export async function waitForEmapCi(commit, request = fetch, wait = delay) {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const commit = execFileSync('git', ['-C', '.emap-source', 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+  const commit = process.argv[2] ?? execFileSync('git', ['-C', '.emap-source', 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
   await waitForEmapCi(commit);
 }
